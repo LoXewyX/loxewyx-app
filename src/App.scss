@@ -1,0 +1,32 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+$--base-black-1: #242424;
+$--base-white-1: #ebebeb;
+$--base-black-2: #333;
+$--base-white-2: #ccc;
+
+.bg-black-1 {
+    background-color: $--base-black-1;
+}
+
+.hover\:bg-black-1:hover {
+    background-color: $--base-black-1;
+}
+
+.txt-white-1 {
+    color: $--base-white-1;
+}
+
+.bg-black-2 {
+    background-color: $--base-black-2;
+}
+
+.hover\:bg-black-2:hover {
+    background-color: $--base-black-2;
+}
+
+.txt-white-2 {
+    color: $--base-white-2;
+}

@@ -1,0 +1,30 @@
+{
+  "name": "loxewyx-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@material-tailwind/react": "^2.1.9",
+    "@preact/signals": "^1.2.3",
+    "@tauri-apps/api": "^1.5.6",
+    "preact": "^10.22.0",
+    "preact-router": "^4.1.2",
+    "react-feather": "^2.0.10"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.8.2",
+    "@tauri-apps/cli": "^1.5.14",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "sass": "^1.77.5",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1"
+  }
+}
