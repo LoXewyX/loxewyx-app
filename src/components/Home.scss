@@ -1,0 +1,21 @@
+.cell {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+  border-radius: 8px;
+}
+.cell:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.icon {
+  width: 40px;
+  height: 40px;
+}
+
+.custom-break {
+  overflow-wrap: normal;
+  word-break: break-word;
+}

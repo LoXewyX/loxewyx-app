@@ -20,14 +20,44 @@ use std::fs;
 
 #[tauri::command]
 fn get_files(dir_path: &str) -> Vec<String> {
-    fs::read_dir(dir_path)
-        .unwrap()
-        .map(|entry| {
-            let path: std::path::PathBuf = entry.unwrap().path();
-            let name: &std::ffi::OsStr = path.file_name().unwrap_or_default();
-            format!("{}{}", name.to_string_lossy(), if path.is_dir() { "/" } else { "" })
-        })
-        .collect()
+    let dir_entries: fs::ReadDir = match fs::read_dir(dir_path) {
+        Ok(entries) => entries,
+        Err(err) => {
+            return vec![err.to_string()];
+        }
+    };
+
+    let mut entries: Vec<String> = vec![];
+
+    for entry in dir_entries {
+        match entry {
+            Ok(entry) => {
+                let path: std::path::PathBuf = entry.path();
+                let name: String = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+                let suffix: &str = if path.is_dir() { "/" } else { "" };
+                entries.push(format!("{}{}", name, suffix));
+            }
+            Err(err) => {
+                entries.push(err.to_string());
+            }
+        }
+    }
+
+    // Sorting entries with directories first and then files
+    entries.sort_by(|a: &String, b: &String| {
+        let is_dir_a: bool = a.ends_with("/");
+        let is_dir_b: bool = b.ends_with("/");
+
+        if is_dir_a == is_dir_b {
+            a.cmp(b)
+        } else if is_dir_a {
+            std::cmp::Ordering::Less
+        } else {
+            std::cmp::Ordering::Greater
+        }
+    });
+
+    entries
 }
 
 fn main() {

@@ -1,32 +1,57 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 $--base-black-1: #242424;
 $--base-white-1: #ebebeb;
 $--base-black-2: #333;
 $--base-white-2: #ccc;
+$--base-black-3: #121212;
+$--base-white-3: #e7e7e7;
+$navbar-height: 40px;
+
+#root {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
 
 .bg-black-1 {
-    background-color: $--base-black-1;
+  background-color: $--base-black-1;
 }
 
 .hover\:bg-black-1:hover {
-    background-color: $--base-black-1;
+  background-color: $--base-black-1;
 }
 
 .txt-white-1 {
-    color: $--base-white-1;
+  color: $--base-white-1;
 }
 
 .bg-black-2 {
-    background-color: $--base-black-2;
+  background-color: $--base-black-2;
 }
 
 .hover\:bg-black-2:hover {
-    background-color: $--base-black-2;
+  background-color: $--base-black-2;
 }
 
 .txt-white-2 {
-    color: $--base-white-2;
+  color: $--base-white-2;
+}
+
+.hover\:txt-white-2:hover {
+  color: $--base-white-3;
+}
+
+.bg-black-3 {
+  background-color: $--base-black-3;
+}
+
+.txt-white-3 {
+  color: $--base-white-2;
+}
+
+.nav\:min-h-screen {
+  min-height: calc(100vh - $navbar-height);
 }

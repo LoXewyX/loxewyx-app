@@ -1,17 +1,18 @@
-import { appWindow } from '@tauri-apps/api/window';
-
 import Sidebar from '../templates/Sidebar';
 import ekilox from '../assets/ekilox.svg';
 import { GitHub, Twitter, Coffee } from 'react-feather';
-
-// Change title
-(async () => await appWindow.setTitle('LoXewyX - About'))();
+import { useEffect } from 'preact/hooks';
+import { title } from '../signals/Menu';
 
 function About() {
+  useEffect(() => {
+    title.value = 'About';
+  });
+
   return (
     <>
       <Sidebar />
-      <div className='bg-black-1 min-h-screen flex items-center justify-center'>
+      <div className='bg-black-1 nav:min-h-screen flex items-center justify-center'>
         <div className='text-center'>
           <img src={ekilox} alt='Logo' className='w-40 h-40 mx-auto mb-8' />
           <h1 className='text-3xl font-bold mb-2 txt-white-1'>Ekilox</h1>

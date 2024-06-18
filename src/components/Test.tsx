@@ -4,7 +4,7 @@ import { isDarkTheme } from '../signals/DarkTheme';
 import Sidebar from '../templates/Sidebar';
 
 // Change title
-(async () => await appWindow.setTitle('LoXewyX - Test'))();
+(async () => await appWindow.setTitle('Test - Ekilox'))();
 
 function Home() {
   const [darkTheme, setDarkTheme] = useState<boolean>(isDarkTheme.value);

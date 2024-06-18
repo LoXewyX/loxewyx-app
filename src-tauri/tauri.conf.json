@@ -19,15 +19,15 @@
       "window": {
         "all": false,
         "center": false,
-        "close": false,
+        "close": true,
         "create": false,
         "hide": false,
-        "maximize": false,
-        "minimize": false,
+        "maximize": true,
+        "minimize": true,
         "print": false,
         "requestUserAttention": false,
         "setAlwaysOnTop": false,
-        "setClosable": false,
+        "setClosable": true,
         "setContentProtected": false,
         "setCursorGrab": false,
         "setCursorIcon": false,
@@ -39,18 +39,18 @@
         "setIcon": false,
         "setIgnoreCursorEvents": false,
         "setMaxSize": false,
-        "setMaximizable": false,
-        "setMinSize": false,
-        "setMinimizable": false,
+        "setMaximizable": true,
+        "setMinSize": true,
+        "setMinimizable": true,
         "setPosition": false,
         "setResizable": false,
         "setSize": false,
         "setSkipTaskbar": false,
         "setTitle": true,
         "show": false,
-        "startDragging": false,
-        "unmaximize": false,
-        "unminimize": false
+        "startDragging": true,
+        "unmaximize": true,
+        "unminimize": true
       }
     },
     "windows": [
@@ -62,11 +62,12 @@
         "minHeight": 600,
         "theme": "Dark",
         "maximized": true,
-        "center": true
+        "center": true,
+        "decorations": false
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; font-src 'self';"
     },
     "bundle": {
       "active": true,
