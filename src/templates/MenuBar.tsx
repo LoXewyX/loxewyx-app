@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useEffect } from 'preact/hooks';
 import { appWindow } from '@tauri-apps/api/window';
 import { isMenuToggled, title } from '../signals/Menu';
 import {
@@ -8,84 +8,101 @@ import {
   X,
   ChevronRight,
 } from 'react-feather';
+import { signal } from '@preact/signals';
+
+const isMaximized = signal(false);
+const windowTitle = signal('');
 
 const MenuBar = () => {
-  const [isMaximized, setMaximized] = useState(false);
-  const [windowTitle, setWindowTitle] = useState('');
-
   useEffect(() => {
-
-    const fetchWindowTitle = async () => {
-      const unsubscribeTitle = title.subscribe((value) => {
-        value = `${value} - Ekilox`;
-        setWindowTitle(value);
-        appWindow.setTitle(value);
-      });
-
-      return () => unsubscribeTitle();
+    const updateWindowTitle = (value: string) => {
+      value = `${value} - Ekilox`;
+      windowTitle.value = value;
+      appWindow.setTitle(value);
     };
 
-    const checkMaximized = async () => {
-      const maximized = await appWindow.isMaximized();
-      setMaximized(maximized);
+    const unsubscribeTitle = title.subscribe(updateWindowTitle);
+
+    const checkMaximized = () => {
+      appWindow.isMaximized().then(setMaximized);
     };
 
-    fetchWindowTitle();
+    const setMaximized = (maximized: boolean) => {
+      isMaximized.value = maximized;
+    };
+
     checkMaximized();
 
     const unlistenMaximize = appWindow.listen('tauri://resize', checkMaximized);
-    const unlistenUnmaximize = appWindow.listen(
-      'tauri://unmaximize',
-      checkMaximized
-    );
+    const unlistenUnmaximize = appWindow.listen('tauri://unmaximize', checkMaximized);
 
     return () => {
+      unsubscribeTitle();
       unlistenMaximize.then((f) => f());
       unlistenUnmaximize.then((f) => f());
     };
   }, []);
 
-  const toggleIsSidebarOpen = () => (isMenuToggled.value = !isMenuToggled.value);
-
-  const handleMinimize = async () => {
-    await appWindow.minimize();
+  const toggleIsSidebarOpen = () => {
+    isMenuToggled.value = !isMenuToggled.value;
   };
 
-  const handleMaximize = async () => {
-    const maximized = await appWindow.isMaximized();
-    if (maximized) {
-      await appWindow.unmaximize();
-    } else {
-      await appWindow.maximize();
-    }
-    setMaximized(!maximized);
+  const handleMinimize = () => {
+    appWindow.minimize();
   };
 
-  const handleClose = async () => {
-    await appWindow.close();
+  const handleMaximize = () => {
+    appWindow.isMaximized().then((maximized) => {
+      if (maximized) {
+        appWindow.unmaximize();
+      } else {
+        appWindow.maximize();
+      }
+      isMaximized.value = !maximized;
+    });
+  };
+
+  const handleClose = () => {
+    appWindow.close();
   };
 
   return (
-    <div className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none sticky top-0 z-50' data-tauri-drag-region>
+    <div
+      className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none sticky top-0 z-50 overflow-ellipsis'
+      data-tauri-drag-region
+    >
       {/* Menu Toggle */}
-      <button className='flex items-center space-x-1 hover:txt-white-2' onClick={toggleIsSidebarOpen}>
+      <button
+        className='flex items-center space-x-1 hover:txt-white-2'
+        onClick={toggleIsSidebarOpen}
+      >
         {isMenuToggled.value ? <X /> : <ChevronRight />}
       </button>
 
       {/* Title */}
-      <div className='flex items-center space-x-1'>
-        {windowTitle}
-      </div>
+      <div className='flex items-center space-x-1'>{windowTitle.value}</div>
 
       {/* Window Controls */}
       <div className='flex space-x-2'>
-        <ChevronDown className='hover:txt-white-2 cursor-pointer' onClick={handleMinimize} />
-        {isMaximized ? (
-          <Minimize2 className='hover:txt-white-2 cursor-pointer' onClick={handleMaximize} />
+        <ChevronDown
+          className='hover:txt-white-2 cursor-pointer'
+          onClick={handleMinimize}
+        />
+        {isMaximized.value ? (
+          <Minimize2
+            className='hover:txt-white-2 cursor-pointer'
+            onClick={handleMaximize}
+          />
         ) : (
-          <Maximize2 className='hover:txt-white-2 cursor-pointer' onClick={handleMaximize} />
+          <Maximize2
+            className='hover:txt-white-2 cursor-pointer'
+            onClick={handleMaximize}
+          />
         )}
-        <X className='hover:txt-white-2 cursor-pointer' onClick={handleClose} />
+        <X
+          className='hover:txt-white-2 cursor-pointer'
+          onClick={handleClose}
+        />
       </div>
     </div>
   );

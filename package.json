@@ -15,7 +15,8 @@
     "@tauri-apps/api": "^1.5.6",
     "preact": "^10.22.0",
     "preact-router": "^4.1.2",
-    "react-feather": "^2.0.10"
+    "react-feather": "^2.0.10",
+    "react-window": "^1.8.10"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.8.2",
