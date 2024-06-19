@@ -27,7 +27,7 @@ fn save_json(data: &Map<String, Value>) {
     let mut file = OpenOptions::new()
         .write(true)
         .truncate(true)
-        .open("config.json")
+        .open("./assets/config.json")
         .expect("Failed to open config.json for writing");
 
     file.write_all(json_str.as_bytes())

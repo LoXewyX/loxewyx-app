@@ -16,19 +16,22 @@ function App() {
   useEffect(() => {
     const fetchTheme = async () => {
       try {
-        isDarkTheme.value = await invoke('get_config', { key: 'isDark' }) ?? true;
+        isDarkTheme.value =
+          (await invoke('get_config', { key: 'isDark' })) ?? true;
       } catch (error) {
         console.error('Error fetching theme:', error);
         isDarkTheme.value = true;
       }
 
-      document.getElementById('root')!.className = isDarkTheme.value ? 'dark' : 'light';
+      document.getElementById('root')!.className = isDarkTheme.value
+        ? 'dark'
+        : 'light';
 
       const unsubscribe = isDarkTheme.subscribe((value) => {
-        console.log("updated");
+        console.log('updated');
         document.getElementById('root')!.className = value ? 'dark' : 'light';
       });
-    
+
       return unsubscribe;
     };
     fetchTheme();
@@ -37,11 +40,13 @@ function App() {
   return (
     <>
       <MenuBar />
-      <Router>
-        <Route path='/' component={Home} />
-        <Route path='/about' component={About} />
-        <Route default component={NotFound} />
-      </Router>
+      <div className='absolute bottom-0 nav:h-screen w-full bg-black-1 txt-white-1 p-8 overflow-y-auto'>
+        <Router>
+          <Route path='/' component={Home} />
+          <Route path='/about' component={About} />
+          <Route default component={NotFound} />
+        </Router>
+      </div>
     </>
   );
 }

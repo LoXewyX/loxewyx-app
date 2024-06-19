@@ -13,7 +13,7 @@ function About() {
   return (
     <>
       <Sidebar />
-      <div className='bg-black-1 nav:min-h-screen flex items-center justify-center'>
+      <div className='flex items-center justify-center bg-black-1 h-full'>
         <div className='text-center'>
           <div className='logo-animation-container mb-4'>
             <img className='drop-shadow-lg' src={ekilox} alt='Logo' />

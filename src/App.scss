@@ -10,6 +10,26 @@ $base-black-3: #121212;
 $base-white-3: #e7e7e7;
 $navbar-height: 40px;
 
+html {
+  overflow: hidden;
+}
+
+.nav\:min-h-screen {
+  min-height: calc(100vh - $navbar-height);
+}
+
+.nav\:h-screen {
+  height: calc(100vh - $navbar-height);
+}
+
+.top-nav {
+  top: $navbar-height;
+}
+
+.bottom-minus-nav {
+  bottom: -$navbar-height;
+}
+
 #root.dark {
   .bg-black-1 {
     background-color: $base-black-1;
@@ -45,10 +65,6 @@ $navbar-height: 40px;
 
   .txt-white-3 {
     color: $base-white-2;
-  }
-
-  .nav\:min-h-screen {
-    min-height: calc(100vh - $navbar-height);
   }
 }
 
@@ -87,10 +103,6 @@ $navbar-height: 40px;
 
   .txt-white-3 {
     color: $base-black-2;
-  }
-
-  .nav\:min-h-screen {
-    min-height: calc(100vh - $navbar-height);
   }
 }
 

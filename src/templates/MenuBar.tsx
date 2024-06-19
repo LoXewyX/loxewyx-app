@@ -4,9 +4,12 @@ import { isMenuToggled, title } from '../signals/Menu';
 import {
   Maximize2,
   Minimize2,
-  ChevronDown,
+  ChevronUp,
   X,
   ChevronRight,
+  Triangle,
+  Circle,
+  ArrowUp,
 } from 'react-feather';
 import { signal } from '@preact/signals';
 
@@ -71,7 +74,7 @@ const MenuBar = () => {
 
   return (
     <div
-      className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none z-50 sticky top-0 left-0'
+      className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none z-50 fixed top-0 left-0 shadow-lg w-full'
       data-tauri-drag-region
     >
       {/* Menu Toggle */}
@@ -86,12 +89,15 @@ const MenuBar = () => {
       </button>
 
       {/* Title */}
-      <div className='flex items-center space-x-1' data-tauri-drag-region>{windowTitle.value}</div>
+      <div className='flex items-center space-x-1' data-tauri-drag-region>
+        {windowTitle.value}
+      </div>
 
       {/* Window Controls */}
       <div className='flex space-x-2'>
-        <ChevronDown
-          className='hover:txt-white-2 cursor-pointer'
+        <ArrowUp
+          className='hover:txt-white-2 cursor-pointer '
+          style={{ transform: 'rotate(225deg)', color: '#1B8CB1' }}
           onClick={handleMinimize}
         />
         {isMaximized.value ? (
@@ -105,7 +111,11 @@ const MenuBar = () => {
             onClick={handleMaximize}
           />
         )}
-        <X className='hover:txt-white-2 cursor-pointer' onClick={handleClose} />
+        <ArrowUp
+          className='hover:txt-white-2 cursor-pointer'
+          style={{ transform: 'rotate(45deg)', color: '#F75353' }}
+          onClick={handleClose}
+        />
       </div>
     </div>
   );

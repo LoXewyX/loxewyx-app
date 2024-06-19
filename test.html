@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind CSS Navbar and Element</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Optional custom styles can be added here */
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-blue-500 p-4 flex items-center justify-between">
+        <div class="text-white text-2xl font-bold">Logo</div>
+        <ul class="flex space-x-4">
+            <li><a href="#" class="text-white">Home</a></li>
+            <li><a href="#" class="text-white">About</a></li>
+            <li><a href="#" class="text-white">Services</a></li>
+            <li><a href="#" class="text-white">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Content below navbar with unique scrollbar -->
+    <div class="flex-1 overflow-y-auto">
+        <div class="h-screen md:h-[120vh] bg-gray-200 flex items-center justify-center">
+            <div class="max-w-4xl text-center p-8">
+                <h1 class="text-4xl font-bold mb-4">Welcome to our website</h1>
+                <p class="text-lg">This element below the navbar is 120% of the viewport height.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional script to include Tailwind CSS via CDN -->
+    <!--
+    <script src="https://cdn.tailwindcss.com"></script>
+    -->
+
+</body>
+</html>

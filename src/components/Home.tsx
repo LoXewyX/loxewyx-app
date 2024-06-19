@@ -65,14 +65,14 @@ function Home() {
   };
 
   return (
-    <>
+    <div>
       <Sidebar />
-      <div className='bg-black-1 txt-white-1 min-h-screen flex items-center justify-center flex-col p-8'>
-        <h1 className='text-3xl font-bold mb-6 md-h:mt-8 lg-h:mt-0'>
-          {route.value}
-        </h1>
+      <div className='h-full flex items-center justify-center flex-col'>
+        <h1 className='text-center text-3xl font-bold my-8'>{route.value}</h1>
         {loading.value ? (
-          <div className='text-xl font-bold mb-6'><Loading /></div>
+          <div className='text-xl font-bold mb-6'>
+            <Loading />
+          </div>
         ) : (
           <div className='grid gap-2 grid-cols-1 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10'>
             {route.value.replace(/\/[^\/]*\/?$/, '/') !== route.value ? (
@@ -128,7 +128,7 @@ function Home() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
