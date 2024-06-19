@@ -4,7 +4,9 @@ import { Router, Route } from 'preact-router';
 import { isDarkTheme } from './signals/DarkTheme';
 
 import MenuBar from './templates/MenuBar';
+import Sidebar from './templates/Sidebar';
 import Home from './components/Home';
+import Browse from './components/Browse';
 import About from './components/About';
 import NotFound from './components/NotFound';
 
@@ -28,7 +30,6 @@ function App() {
         : 'light';
 
       const unsubscribe = isDarkTheme.subscribe((value) => {
-        console.log('updated');
         document.getElementById('root')!.className = value ? 'dark' : 'light';
       });
 
@@ -40,9 +41,11 @@ function App() {
   return (
     <>
       <MenuBar />
-      <div className='absolute bottom-0 nav:h-screen w-full bg-black-1 txt-white-1 p-8 overflow-y-auto'>
+      <Sidebar />
+      <div className='absolute bottom-0 nav:h-screen w-full bg-black-1 txt-white-1 overflow-y-auto'>
         <Router>
           <Route path='/' component={Home} />
+          <Route path='/browse' component={Browse} />
           <Route path='/about' component={About} />
           <Route default component={NotFound} />
         </Router>

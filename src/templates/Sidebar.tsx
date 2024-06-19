@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { Link } from 'preact-router';
-import { Home, Info, Moon, Sun } from 'react-feather';
+import { Folder, Home, Info, Moon, Sun } from 'react-feather';
 import { Button } from '@material-tailwind/react';
 import { useEffect } from 'preact/hooks';
 import { isDarkTheme } from '../signals/DarkTheme';
@@ -42,6 +42,14 @@ function Sidebar() {
             >
               <Home size={24} className='mr-2' />
               Home
+            </Link>
+            <Link
+              href='/browse'
+              className='flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
+              onClick={onNavigate}
+            >
+              <Folder size={24} className='mr-2' />
+              Browse
             </Link>
           </div>
           <div className='flex flex-col justify-end'>

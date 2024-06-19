@@ -51,6 +51,10 @@ html {
     background-color: $base-black-2;
   }
 
+  .bg-white-2 {
+    background-color: $base-black-2;
+  }
+
   .txt-white-2 {
     color: $base-white-2;
   }
@@ -89,6 +93,10 @@ html {
     background-color: $base-white-2;
   }
 
+  .bg-white-2 {
+    background-color: $base-black-2;
+  }
+
   .txt-white-2 {
     color: $base-black-2;
   }
@@ -106,14 +114,12 @@ html {
   }
 }
 
-@media (min-height: 600px) {
-  .md-h\:mt-8 {
-    margin-top: 2rem;
-  }
+.justify-responsive {
+  justify-content: center;
 }
 
-@media (min-height: 920px) {
-  .lg-h\:mt-0 {
-    margin-top: 0;
+@media (max-height: 860px) {
+  .justify-responsive {
+    justify-content: start;
   }
 }

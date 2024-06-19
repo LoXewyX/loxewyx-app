@@ -10,11 +10,6 @@
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
-
-    .popup {
-      opacity: 1;
-      pointer-events: auto;
-    }
   }
 }
 
@@ -30,17 +25,4 @@
 .custom-break {
   overflow-wrap: normal;
   word-break: break-word;
-}
-
-.popup {
-  position: absolute;
-  top: -30px; /* Adjust as needed */
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
 }

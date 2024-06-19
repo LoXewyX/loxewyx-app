@@ -1,3 +1,3 @@
-import { signal } from "@preact/signals";
+import { Signal, signal } from '@preact/signals';
 
-export const isDarkTheme = signal(true);
+export const isDarkTheme: Signal<boolean> = signal(true);

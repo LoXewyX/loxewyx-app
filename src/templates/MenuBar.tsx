@@ -4,11 +4,7 @@ import { isMenuToggled, title } from '../signals/Menu';
 import {
   Maximize2,
   Minimize2,
-  ChevronUp,
-  X,
   ChevronRight,
-  Triangle,
-  Circle,
   ArrowUp,
 } from 'react-feather';
 import { signal } from '@preact/signals';
@@ -16,7 +12,11 @@ import { signal } from '@preact/signals';
 const isMaximized = signal(false);
 const windowTitle = signal('');
 
-const MenuBar = () => {
+interface MenuBarProps {
+  child?: preact.ComponentChildren | string;
+}
+
+const MenuBar = ({ child }: MenuBarProps) => {
   useEffect(() => {
     const updateWindowTitle = (value: string) => {
       value = `${value} - Ekilox`;
@@ -76,6 +76,7 @@ const MenuBar = () => {
     <div
       className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none z-50 fixed top-0 left-0 shadow-lg w-full'
       data-tauri-drag-region
+      data-tauri-resize-region
     >
       {/* Menu Toggle */}
       <button
@@ -90,7 +91,7 @@ const MenuBar = () => {
 
       {/* Title */}
       <div className='flex items-center space-x-1' data-tauri-drag-region>
-        {windowTitle.value}
+        {windowTitle.value ? windowTitle.value : child}
       </div>
 
       {/* Window Controls */}
