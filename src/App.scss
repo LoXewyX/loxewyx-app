@@ -2,7 +2,6 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-// Define SCSS variables outside of any selector
 $base-black-1: #242424;
 $base-white-1: #ebebeb;
 $base-black-2: #333;
@@ -11,48 +10,7 @@ $base-black-3: #121212;
 $base-white-3: #e7e7e7;
 $navbar-height: 40px;
 
-// Default styles
-.bg-black-1 {
-  background-color: $base-black-1;
-}
-
-.hover\:bg-black-1:hover {
-  background-color: $base-black-1;
-}
-
-.txt-white-1 {
-  color: $base-white-1;
-}
-
-.bg-black-2 {
-  background-color: $base-black-2;
-}
-
-.hover\:bg-black-2:hover {
-  background-color: $base-black-2;
-}
-
-.txt-white-2 {
-  color: $base-white-2;
-}
-
-.hover\:txt-white-2:hover {
-  color: $base-white-3;
-}
-
-.bg-black-3 {
-  background-color: $base-black-3;
-}
-
-.txt-white-3 {
-  color: $base-white-2;
-}
-
-.nav\:min-h-screen {
-  min-height: calc(100vh - $navbar-height);
-}
-
-html.dark {
+#root.dark {
   .bg-black-1 {
     background-color: $base-black-1;
   }
@@ -94,7 +52,7 @@ html.dark {
   }
 }
 
-html.light {
+#root.light {
   .bg-black-1 {
     background-color: $base-white-1;
   }

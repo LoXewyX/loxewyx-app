@@ -34,7 +34,10 @@ const MenuBar = () => {
     checkMaximized();
 
     const unlistenMaximize = appWindow.listen('tauri://resize', checkMaximized);
-    const unlistenUnmaximize = appWindow.listen('tauri://unmaximize', checkMaximized);
+    const unlistenUnmaximize = appWindow.listen(
+      'tauri://unmaximize',
+      checkMaximized
+    );
 
     return () => {
       unsubscribeTitle();
@@ -68,7 +71,7 @@ const MenuBar = () => {
 
   return (
     <div
-      className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none sticky top-0 z-50 overflow-ellipsis'
+      className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none z-50 sticky top-0 left-0'
       data-tauri-drag-region
     >
       {/* Menu Toggle */}
@@ -76,11 +79,14 @@ const MenuBar = () => {
         className='flex items-center space-x-1 hover:txt-white-2'
         onClick={toggleIsSidebarOpen}
       >
-        {isMenuToggled.value ? <X /> : <ChevronRight />}
+        <ChevronRight
+          className='transform transition-transform duration-300'
+          style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : ''}
+        />
       </button>
 
       {/* Title */}
-      <div className='flex items-center space-x-1'>{windowTitle.value}</div>
+      <div className='flex items-center space-x-1' data-tauri-drag-region>{windowTitle.value}</div>
 
       {/* Window Controls */}
       <div className='flex space-x-2'>
@@ -99,10 +105,7 @@ const MenuBar = () => {
             onClick={handleMaximize}
           />
         )}
-        <X
-          className='hover:txt-white-2 cursor-pointer'
-          onClick={handleClose}
-        />
+        <X className='hover:txt-white-2 cursor-pointer' onClick={handleClose} />
       </div>
     </div>
   );

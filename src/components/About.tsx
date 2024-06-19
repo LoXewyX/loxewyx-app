@@ -16,7 +16,7 @@ function About() {
       <div className='bg-black-1 nav:min-h-screen flex items-center justify-center'>
         <div className='text-center'>
           <div className='logo-animation-container mb-4'>
-            <img src={ekilox} alt='Logo' />
+            <img className='drop-shadow-lg' src={ekilox} alt='Logo' />
           </div>
           <h1 className='text-3xl font-bold mb-2 txt-white-1'>Ekilox</h1>
           <p className='text-lg mb-2 txt-white-2'>Created by LoXewyX</p>

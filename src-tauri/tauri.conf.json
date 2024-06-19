@@ -63,7 +63,9 @@
         "theme": "Dark",
         "maximized": true,
         "center": true,
-        "decorations": false
+        "decorations": false,
+        "resizable": true,
+        "transparent": true
       }
     ],
     "security": {

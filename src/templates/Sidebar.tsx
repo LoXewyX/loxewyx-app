@@ -7,10 +7,10 @@ import { isMenuToggled } from '../signals/Menu';
 
 function Sidebar() {
   useEffect(() => {
-    document!.getElementById('root')!.className = isDarkTheme.value
+    document.getElementById('root')!.className = isDarkTheme.value
       ? 'dark'
       : 'light';
-  });
+  }, []);
 
   const toggleisDarkTheme = (): void => {
     isDarkTheme.value = !isDarkTheme.value;
