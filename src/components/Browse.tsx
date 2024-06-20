@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useCallback, useMemo } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { title } from '../signals/Menu';
 import Loading from '../templates/Loading';
@@ -9,7 +9,7 @@ import './Browse.scss';
 
 const route = signal<string>('C:/');
 const files = signal<string[]>([]);
-const loading = signal(false);
+const loading = signal<boolean>(false);
 
 function Home() {
   useEffect(() => {
@@ -17,12 +17,10 @@ function Home() {
     fetchData();
   }, []);
 
-  const fetchData = async (newRoute = route.value) => {
+  const fetchData = useCallback(async (newRoute = route.value) => {
     loading.value = true;
     try {
-      const fetchedFiles: string[] = await invoke('get_files', {
-        dirPath: newRoute,
-      });
+      const fetchedFiles: string[] = await invoke('get_files', { dirPath: newRoute });
       requestIdleCallback(() => {
         files.value = fetchedFiles;
         loading.value = false;
@@ -31,9 +29,9 @@ function Home() {
       console.error('Error fetching files:', error);
       loading.value = false;
     }
-  };
+  }, []);
 
-  const navigate = async (path: string, isDir: boolean, isFull: boolean) => {
+  const navigate = useCallback(async (path: string, isDir: boolean, isFull: boolean) => {
     if (!isDir) return;
     const newRoute = isFull
       ? path
@@ -45,55 +43,45 @@ function Home() {
     new Howl({
       src: [`/${isFull ? 'backward' : 'forward'}.mp3`],
     }).play();
-  };
+  }, [fetchData]);
 
-  const getFileNameWithoutExtension = (fileName: string) => {
+  const getFileNameWithoutExtension = useCallback((fileName: string) => {
     const lastDotIndex = fileName.lastIndexOf('.');
     return lastDotIndex === -1 ? fileName : fileName.substring(0, lastDotIndex);
-  };
+  }, []);
 
-  const getFileExtension = (fileName: string) => {
+  const getFileExtension = useCallback((fileName: string) => {
     const lastDotIndex = fileName.lastIndexOf('.');
-    return lastDotIndex === -1
-      ? ''
-      : fileName
-          .substring(lastDotIndex + 1)
-          .toUpperCase()
-          .trim();
-  };
+    return lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex + 1).toUpperCase().trim();
+  }, []);
 
-  const limitTextLength = (text: string, maxLength: number) => {
-    return text.length > maxLength
-      ? `${text.substring(0, maxLength)}...`
-      : text;
-  };
+  const limitTextLength = useCallback((text: string, maxLength: number) => {
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  }, []);
+
+  const isRoot = useMemo(() => {
+    return route.value.replace(/\/[^\/]*\/?$/, '/') === route.value;
+  }, [route.value]);
 
   return (
-    <div className='flex flex-col mt-8 w-full min-h-full justify-responsive items-center'>
-      <h1 className='text-center text-3xl font-bold my-8'>{route.value}</h1>
+    <div className='flex flex-col w-full min-h-full justify-responsive items-center'>
+      <h1 className='text-center mt-8 text-3xl font-bold my-8'>{route.value}</h1>
       {loading.value ? (
         <div className='text-xl font-bold mb-6'>
           <Loading />
         </div>
       ) : (
         <div className='grid gap-2 grid-cols-1 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10'>
-          {route.value.replace(/\/[^\/]*\/?$/, '/') !== route.value ? (
+          {!isRoot && (
             <div
               className='flex flex-col items-center justify-center cursor-pointer mb-2 cell'
-              onClick={() =>
-                navigate(route.value.replace(/\/[^\/]*\/?$/, '/'), true, true)
-              }
+              onClick={() => navigate(route.value.replace(/\/[^\/]*\/?$/, '/'), true, true)}
             >
-              <ArrowUp
-                className='min-w-6 min-h-6 icon mb-2'
-                title={'Go back'}
-              />
+              <ArrowUp className='min-w-6 min-h-6 icon mb-2' title='Go back' />
               ..
             </div>
-          ) : (
-            <></>
           )}
-          {files.value.map((item, index) => (
+          {files.value.map((item: string, index: number) => (
             <div
               className='flex flex-col items-center justify-center cursor-pointer mb-2 cell text-center custom-break'
               key={index}
