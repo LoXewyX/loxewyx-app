@@ -60,12 +60,10 @@
         "height": 600,
         "minWidth": 800,
         "minHeight": 600,
-        "theme": "Dark",
         "maximized": true,
         "center": true,
-        "decorations": false,
         "resizable": true,
-        "transparent": true
+        "decorations": false
       }
     ],
     "security": {

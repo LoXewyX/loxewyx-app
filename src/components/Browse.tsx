@@ -1,63 +1,136 @@
-import { invoke } from '@tauri-apps/api/tauri';
 import { useEffect, useCallback, useMemo } from 'preact/hooks';
+import { invoke } from '@tauri-apps/api/tauri';
 import { signal } from '@preact/signals';
-import { title } from '../signals/Menu';
-import Loading from '../templates/Loading';
 import { Howl } from 'howler';
 import { ArrowUp, Folder, File, AlertCircle } from 'react-feather';
+import Loading from '../templates/Loading';
 import './Browse.scss';
+import { title, childElement } from '../signals/Menu';
 
-const route = signal<string>('C:/');
-const files = signal<string[]>([]);
-const loading = signal<boolean>(false);
+type Signal<T> = {
+  value: T;
+};
 
-function Home() {
+const route: Signal<string> = signal('');
+const drive: Signal<string> = signal('');
+const drives: Signal<string[]> = signal([]);
+const files: Signal<string[]> = signal([]);
+const loading: Signal<boolean> = signal(false);
+
+const MenuElement = () => {
+  const handleDriveChange = (event: Event) => {
+    const selectedDrive = (event.target as HTMLSelectElement).value;
+    drive.value = selectedDrive;
+    route.value = drive.value;
+  };
+
+  return (
+    <div className='relative'>
+      <select
+        value={drive.value}
+        onChange={handleDriveChange}
+        className='block w-full px-4 py-2 pr-8 rounded shadow leading-tight'
+      >
+        {drives.value.map((driveOption) => (
+          <option key={driveOption} value={driveOption}>
+            {driveOption}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+const Browse = () => {
   useEffect(() => {
-    title.value = 'Browse';
-    fetchData();
+    title.value = "Browse";
+
+    const initializeBrowse = async () => {
+      try {
+        await fetchMountPaths();
+        route.value = drive.value;
+        childElement.value = <MenuElement />;
+        await fetchRouteContent();
+      } catch (error) {
+        console.error('Error initializing Browse:', error);
+      }
+    };
+
+    initializeBrowse();
   }, []);
 
-  const fetchData = useCallback(async (newRoute = route.value) => {
-    loading.value = true;
+  const fetchMountPaths = useCallback(async () => {
     try {
-      const fetchedFiles: string[] = await invoke('get_files', { dirPath: newRoute });
-      requestIdleCallback(() => {
-        files.value = fetchedFiles;
-        loading.value = false;
-      });
+      const fetchedDrives: string[] = await invoke('get_mount_points', {});
+      drives.value = fetchedDrives;
+      drive.value = fetchedDrives[0];
     } catch (error) {
-      console.error('Error fetching files:', error);
-      loading.value = false;
+      console.error('Error fetching mount points:', error);
     }
   }, []);
 
-  const navigate = useCallback(async (path: string, isDir: boolean, isFull: boolean) => {
-    if (!isDir) return;
-    const newRoute = isFull
-      ? path
-      : `${route.value.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+  const fetchRouteContent = useCallback(
+    async (newRoute: string = route.value) => {
+      loading.value = true;
+      try {
+        const fetchedFiles: string[] = await invoke('get_files', {
+          dirPath: newRoute,
+        });
+        files.value = fetchedFiles;
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      } finally {
+        loading.value = false;
+      }
+    },
+    []
+  );
 
-    route.value = newRoute;
-    fetchData(newRoute);
+  const navigate = useCallback(
+    async (path: string, isDir: boolean, isFull: boolean) => {
+      if (!isDir) return;
 
-    new Howl({
-      src: [`/${isFull ? 'backward' : 'forward'}.mp3`],
-    }).play();
-  }, [fetchData]);
+      const newRoute = isFull
+        ? path
+        : `${route.value.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+      route.value = newRoute;
+      await fetchRouteContent(newRoute); // Wait for route content to be fetched before continuing
 
-  const getFileNameWithoutExtension = useCallback((fileName: string) => {
+      new Howl({
+        src: [`/${isFull ? 'backward' : 'forward'}.mp3`],
+      }).play();
+    },
+    [fetchRouteContent]
+  );
+
+  const getFileNameWithoutExtension = useCallback(
+    (fileName: string): string => {
+      const lastDotIndex = fileName.lastIndexOf('.');
+      return lastDotIndex === -1
+        ? fileName
+        : fileName.substring(0, lastDotIndex);
+    },
+    []
+  );
+
+  const getFileExtension = useCallback((fileName: string): string => {
     const lastDotIndex = fileName.lastIndexOf('.');
-    return lastDotIndex === -1 ? fileName : fileName.substring(0, lastDotIndex);
+    return lastDotIndex === -1
+      ? ''
+      : fileName
+          .substring(lastDotIndex + 1)
+          .toUpperCase()
+          .trim();
   }, []);
 
-  const getFileExtension = useCallback((fileName: string) => {
-    const lastDotIndex = fileName.lastIndexOf('.');
-    return lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex + 1).toUpperCase().trim();
-  }, []);
-
-  const limitTextLength = useCallback((text: string, maxLength: number) => {
-    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
-  }, []);
+  const limitTextLength = useCallback(
+    (text: string, maxLength: number): string => {
+      return text.length > maxLength
+        ? `${text.substring(0, maxLength)}...`
+        : text;
+    },
+    []
+  );
 
   const isRoot = useMemo(() => {
     return route.value.replace(/\/[^\/]*\/?$/, '/') === route.value;
@@ -65,7 +138,9 @@ function Home() {
 
   return (
     <div className='flex flex-col w-full min-h-full justify-responsive items-center'>
-      <h1 className='text-center mt-8 text-3xl font-bold my-8'>{route.value}</h1>
+      <h1 className='text-center mt-8 text-3xl font-bold my-8'>
+        {route.value}
+      </h1>
       {loading.value ? (
         <div className='text-xl font-bold mb-6'>
           <Loading />
@@ -75,7 +150,9 @@ function Home() {
           {!isRoot && (
             <div
               className='flex flex-col items-center justify-center cursor-pointer mb-2 cell'
-              onClick={() => navigate(route.value.replace(/\/[^\/]*\/?$/, '/'), true, true)}
+              onClick={() =>
+                navigate(route.value.replace(/\/[^\/]*\/?$/, '/'), true, true)
+              }
             >
               <ArrowUp className='min-w-6 min-h-6 icon mb-2' title='Go back' />
               ..
@@ -119,6 +196,6 @@ function Home() {
       )}
     </div>
   );
-}
+};
 
-export default Home;
+export default Browse;

@@ -3,7 +3,7 @@ import { Link } from 'preact-router';
 import { Folder, Home, Info, Moon, Sun } from 'react-feather';
 import { useEffect } from 'preact/hooks';
 import { isDarkTheme } from '../signals/DarkTheme';
-import { isMenuToggled } from '../signals/Menu';
+import { childElement, isMenuToggled } from '../signals/Menu';
 
 function Sidebar() {
   useEffect(() => {
@@ -12,17 +12,20 @@ function Sidebar() {
       : 'light';
   }, []);
 
-  const toggleisDarkTheme = (): void => {
+  const toggleisDarkTheme = () => {
     isDarkTheme.value = !isDarkTheme.value;
-    document.getElementById('root')!.className = isDarkTheme.value ? 'dark' : 'light';
+    document.getElementById('root')!.className = isDarkTheme.value
+      ? 'dark'
+      : 'light';
     const updateTheme = async () => {
       await invoke('set_config', { key: 'isDark', value: isDarkTheme.value });
     };
     updateTheme();
   };
 
-  const onNavigate = async () => {
+  const onNavigate = () => {
     isMenuToggled.value = false;
+    childElement.value = null;
   };
 
   return (
@@ -37,7 +40,11 @@ function Sidebar() {
             <Link
               href='/'
               className='flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
-              onClick={onNavigate}
+              onClick={(event) => {
+                if (event.currentTarget.href !== window.location.href) {
+                  onNavigate();
+                }
+              }}
             >
               <Home size={24} className='mr-2' />
               Home
@@ -45,7 +52,11 @@ function Sidebar() {
             <Link
               href='/browse'
               className='flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
-              onClick={onNavigate}
+              onClick={(event) => {
+                if (event.currentTarget.href !== window.location.href) {
+                  onNavigate();
+                }
+              }}
             >
               <Folder size={24} className='mr-2' />
               Browse
@@ -55,7 +66,11 @@ function Sidebar() {
             <Link
               href='/about'
               className='flex items-center p-2 mb-2 rounded txt.white-2 hover:bg-black-2'
-              onClick={onNavigate}
+              onClick={(event) => {
+                if (event.currentTarget.href !== window.location.href) {
+                  onNavigate();
+                }
+              }}
             >
               <Info size={24} className='mr-2' />
               About
@@ -77,9 +92,9 @@ function Sidebar() {
 
       {/* Overlay */}
       <div
-        className={`fixed left-0 top-nav w-full nav:min-h-screen bg-black opacity-50 z-30 ${
-          isMenuToggled.value ? 'block' : 'hidden'
-        } transition-opacity`}
+        className={`fixed left-0 top-nav w-full min-h-screen bg-black z-30 transition-opacity duration-300 ease-in-out ${
+          isMenuToggled.value ? 'opacity-50' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={() => (isMenuToggled.value = false)}
       ></div>
     </>

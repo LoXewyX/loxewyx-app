@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use jwalk::WalkDir;
+use mountpoints::mountpaths;
 use serde_json::{Map, Value};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
@@ -71,7 +72,7 @@ fn get_files(dir_path: &str) -> Vec<String> {
                             name_str.push('/');
                         }
                         name_str
-                    },
+                    }
                     None => {
                         entries.push(path.to_string_lossy().to_string());
                         continue;
@@ -89,7 +90,7 @@ fn get_files(dir_path: &str) -> Vec<String> {
     entries.sort_by(|a, b| {
         let a_is_dir = a.ends_with('/');
         let b_is_dir = b.ends_with('/');
-        
+
         match (a_is_dir, b_is_dir) {
             (true, true) | (false, false) => a.cmp(b),
             (true, false) => std::cmp::Ordering::Less,
@@ -100,9 +101,29 @@ fn get_files(dir_path: &str) -> Vec<String> {
     entries
 }
 
+#[tauri::command]
+fn get_mount_points() -> Vec<String> {
+    let mut mount_points = Vec::new();
+
+    if let Ok(paths) = mountpaths() {
+        for path in paths {
+            if let Some(path_str) = path.to_str() {
+                mount_points.push(path_str.to_string().replace("\\", "/"));
+            }
+        }
+    }
+    mount_points.push("D:/".to_string());
+    mount_points
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![get_config, set_config, get_files])
+        .invoke_handler(tauri::generate_handler![
+            get_config,
+            set_config,
+            get_files,
+            get_mount_points
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

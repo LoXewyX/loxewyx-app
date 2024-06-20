@@ -1,22 +1,13 @@
 import { useEffect } from 'preact/hooks';
 import { appWindow } from '@tauri-apps/api/window';
-import { isMenuToggled, title } from '../signals/Menu';
-import {
-  Maximize2,
-  Minimize2,
-  ChevronRight,
-  ArrowUp,
-} from 'react-feather';
+import { isMenuToggled, title, childElement } from '../signals/Menu';
+import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
 import { signal } from '@preact/signals';
 
 const isMaximized = signal(false);
 const windowTitle = signal('');
 
-interface MenuBarProps {
-  child?: preact.ComponentChildren | string;
-}
-
-const MenuBar = ({ child }: MenuBarProps) => {
+const MenuBar = () => {
   useEffect(() => {
     const updateWindowTitle = (value: string) => {
       value = `${value} - Ekilox`;
@@ -76,22 +67,24 @@ const MenuBar = ({ child }: MenuBarProps) => {
     <div
       className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none z-50 fixed top-0 left-0 shadow-lg w-full'
       data-tauri-drag-region
-      data-tauri-resize-region
     >
       {/* Menu Toggle */}
-      <button
-        className='flex items-center space-x-1 hover:txt-white-2'
-        onClick={toggleIsSidebarOpen}
-      >
-        <ChevronRight
-          className='transform transition-transform duration-300'
-          style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : ''}
-        />
-      </button>
+      <div className='flex'>
+        <button
+          className='flex items-center space-x-1 hover:txt-white-2'
+          onClick={toggleIsSidebarOpen}
+        >
+          <ChevronRight
+            className='transform transition-transform duration-300'
+            style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : ''}
+          />
+        </button>
+        {childElement.value !== null ? childElement.value : <></>}
+      </div>
 
       {/* Title */}
       <div className='flex items-center space-x-1' data-tauri-drag-region>
-        {windowTitle.value ? windowTitle.value : child}
+        {windowTitle.value}
       </div>
 
       {/* Window Controls */}
