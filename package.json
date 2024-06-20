@@ -4,27 +4,20 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "dev": "vite"
   },
   "dependencies": {
-    "@material-tailwind/react": "^2.1.9",
     "@preact/signals": "^1.2.3",
     "@tauri-apps/api": "^1.5.6",
     "howler": "^2.2.4",
     "preact": "^10.22.0",
     "preact-router": "^4.1.2",
-    "react-feather": "^2.0.10",
-    "react-virtualized": "^9.22.5"
+    "react-feather": "^2.0.10"
   },
   "devDependencies": {
-    "@preact/compat": "^17.1.2",
     "@preact/preset-vite": "^2.8.2",
     "@tauri-apps/cli": "^1.5.14",
     "@types/howler": "^2.2.11",
-    "@types/react-virtualized": "^9.21.30",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "sass": "^1.77.6",

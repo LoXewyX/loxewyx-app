@@ -1,7 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { Link } from 'preact-router';
 import { Folder, Home, Info, Moon, Sun } from 'react-feather';
-import { Button } from '@material-tailwind/react';
 import { useEffect } from 'preact/hooks';
 import { isDarkTheme } from '../signals/DarkTheme';
 import { isMenuToggled } from '../signals/Menu';
@@ -61,7 +60,7 @@ function Sidebar() {
               <Info size={24} className='mr-2' />
               About
             </Link>
-            <Button
+            <button
               className='font-normal text-base flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2 '
               onClick={toggleisDarkTheme}
             >
@@ -71,7 +70,7 @@ function Sidebar() {
                 <Moon size={24} className='mr-2' />
               )}
               {isDarkTheme.value ? 'Light Mode' : 'Dark Mode'}
-            </Button>
+            </button>
           </div>
         </nav>
       </div>

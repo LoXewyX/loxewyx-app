@@ -13,7 +13,7 @@ const loading = signal<boolean>(false);
 
 function Home() {
   useEffect(() => {
-    title.value = 'Home';
+    title.value = 'Browse';
     fetchData();
   }, []);
 
