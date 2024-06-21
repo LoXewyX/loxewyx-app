@@ -5,7 +5,7 @@ import { isDarkTheme } from './signals/DarkTheme';
 
 import MenuBar from './templates/MenuBar';
 import Sidebar from './templates/Sidebar';
-import Home from './components/Home';
+import Editor from './components/Editor';
 import Browse from './components/Browse';
 import About from './components/About';
 import NotFound from './components/NotFound';
@@ -44,7 +44,7 @@ function App() {
       <Sidebar />
       <div className='absolute bottom-0 nav:h-screen w-full bg-black-1 txt-white-1 overflow-y-auto'>
         <Router>
-          <Route path='/' component={Home} />
+          <Route path='/' component={Editor} />
           <Route path='/browse' component={Browse} />
           <Route path='/about' component={About} />
           <Route default component={NotFound} />

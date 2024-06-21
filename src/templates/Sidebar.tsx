@@ -4,9 +4,13 @@ import { ComponentType } from 'preact';
 import { Link } from 'preact-router';
 import { useEffect } from 'preact/hooks';
 import { isDarkTheme } from '../signals/DarkTheme';
-import { childElement, isMenuToggled } from '../signals/Menu';
+import {
+  isMenuToggled,
+  leftChildElement,
+  rightChildElement,
+} from '../signals/Menu';
 
-import { Folder, Home, Info, Moon, Sun } from 'react-feather';
+import { Folder, Edit3, Info, Moon, Sun } from 'react-feather';
 
 function Sidebar() {
   useEffect(() => {
@@ -29,20 +33,21 @@ function Sidebar() {
     const target = event.currentTarget as HTMLAnchorElement;
     if (target.href !== window.location.href) {
       isMenuToggled.value = false;
-      childElement.value = null;
+      leftChildElement.value = null;
+      rightChildElement.value = null;
     }
   };
 
   interface LinkProps {
     href: string;
-    icon: ComponentType<{ size: number, className: string }>;
+    icon: ComponentType<{ size: number; className: string }>;
     label: string;
   }
 
   const links: LinkProps[] = [
-    { href: '/', icon: Home, label: 'Home' },
+    { href: '/', icon: Edit3, label: 'Editor' },
     { href: '/browse', icon: Folder, label: 'Browse' },
-    { href: '/about', icon: Info, label: 'About' }
+    { href: '/about', icon: Info, label: 'About' },
   ];
 
   return (

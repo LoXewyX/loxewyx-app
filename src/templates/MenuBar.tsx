@@ -4,7 +4,12 @@ import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
 
 import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
-import { isMenuToggled, title, childElement } from '../signals/Menu';
+import {
+  isMenuToggled,
+  title,
+  leftChildElement,
+  rightChildElement,
+} from '../signals/Menu';
 
 const isMaximized = signal(false);
 const windowTitle = signal('');
@@ -67,7 +72,8 @@ const MenuBar = () => {
 
   return (
     <div
-      className='flex items-center justify-between bg-black-3 txt-white-3 px-4 py-2 select-none z-50 fixed top-0 left-0 shadow-lg w-full'
+      id='menu-bar'
+      className='flex items-center justify-between bg-black-3 txt-white-3 py-1 px-2 select-none z-50 fixed top-0 left-0 shadow-lg w-full'
       data-tauri-drag-region
     >
       {/* Menu Toggle */}
@@ -81,18 +87,33 @@ const MenuBar = () => {
             style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : ''}
           />
         </button>
-        {childElement.value !== null ? childElement.value : <></>}
+        {leftChildElement.value !== null ? (
+          <>
+            {leftChildElement.value}
+            <div class='ml-2 inline-block w-0.5 self-stretch bg-white-2'></div>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
 
       {/* Title */}
-      <div className='flex items-center space-x-1' data-tauri-drag-region>
+      <div className='block' data-tauri-drag-region>
         {windowTitle.value}
       </div>
 
       {/* Window Controls */}
       <div className='flex space-x-2'>
+        {rightChildElement.value !== null ? (
+          <>
+            <div class='mr-2 inline-block w-0.5 self-stretch bg-white-2'></div>
+            {rightChildElement.value}
+          </>
+        ) : (
+          <></>
+        )}
         <ArrowUp
-          className='hover:txt-white-2 cursor-pointer '
+          className='hover:txt-white-2 cursor-pointer'
           style={{ transform: 'rotate(225deg)', color: '#1B8CB1' }}
           onClick={handleMinimize}
         />

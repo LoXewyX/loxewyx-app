@@ -4,6 +4,7 @@
 use jwalk::WalkDir;
 use mountpoints::mountpaths;
 use serde_json::{Map, Value};
+use std::cmp::Ordering;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -22,10 +23,7 @@ fn read_json() -> Map<String, Value> {
 }
 
 fn save_json(data: &Map<String, Value>) {
-    // Serialize the data to a JSON string
     let json_str = serde_json::to_string_pretty(data).expect("Failed to serialize JSON");
-
-    // Write the JSON string back to the file
     let mut file = OpenOptions::new()
         .write(true)
         .truncate(true)
@@ -54,52 +52,46 @@ fn set_config(key: String, value: Value) {
 
 #[tauri::command]
 fn get_files(dir_path: &str) -> Vec<String> {
-    let mut entries: Vec<String> = Vec::new();
+    let mut entries: Vec<(String, bool)> = Vec::new();
 
-    // Collect entries excluding the directory itself
     for entry_result in WalkDir::new(dir_path).max_depth(1).into_iter() {
         match entry_result {
             Ok(entry) => {
                 let path = entry.path();
-                // Skip the directory itself
                 if path == Path::new(dir_path) {
                     continue;
                 }
-                // Get file name as String or handle error
+
+                let is_dir = entry.file_type().is_dir();
                 let name_str = match path.file_name() {
                     Some(name_osstr) => {
                         let mut name_str = name_osstr.to_string_lossy().to_string();
-                        if entry.file_type().is_dir() {
+                        if is_dir {
                             name_str.push('/');
                         }
-                        name_str
+                        (name_str, is_dir)
                     }
                     None => {
-                        entries.push(path.to_string_lossy().to_string());
-                        continue;
+                        (path.to_string_lossy().to_string(), is_dir)
                     }
                 };
                 entries.push(name_str);
             }
             Err(err) => {
-                entries.push(err.to_string());
+                entries.push((err.to_string(), false));
             }
         }
     }
 
-    // Sort entries by type (directories first)
-    entries.sort_by(|a, b| {
-        let a_is_dir = a.ends_with('/');
-        let b_is_dir = b.ends_with('/');
-
-        match (a_is_dir, b_is_dir) {
-            (true, true) | (false, false) => a.cmp(b),
-            (true, false) => std::cmp::Ordering::Less,
-            (false, true) => std::cmp::Ordering::Greater,
+    entries.sort_unstable_by(|a, b| {
+        match (a.1, b.1) {
+            (true, true) | (false, false) => a.0.cmp(&b.0),
+            (true, false) => Ordering::Less,
+            (false, true) => Ordering::Greater,
         }
     });
 
-    entries
+    entries.into_iter().map(|(name, _)| name).collect()
 }
 
 #[tauri::command]
@@ -113,7 +105,7 @@ fn get_mount_points() -> Vec<String> {
             }
         }
     }
-    
+
     mount_points
 }
 

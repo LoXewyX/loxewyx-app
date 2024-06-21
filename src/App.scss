@@ -8,10 +8,14 @@ $base-black-2: #333;
 $base-white-2: #ccc;
 $base-black-3: #121212;
 $base-white-3: #e7e7e7;
-$navbar-height: 40px;
+$navbar-height: 50px;
 
 html {
   user-select: none;
+}
+
+#menu-bar {
+  height: $navbar-height;
 }
 
 .nav\:min-h-screen {
@@ -67,6 +71,10 @@ html {
     background-color: $base-black-3;
   }
 
+  .bg-white-3 {
+    background-color: $base-white-3;
+  }
+
   .txt-white-3 {
     color: $base-white-2;
   }
@@ -107,6 +115,10 @@ html {
 
   .bg-black-3 {
     background-color: $base-white-3;
+  }
+
+  .bg-white-3 {
+    background-color: $base-black-3;
   }
 
   .txt-white-3 {

@@ -1,34 +1,44 @@
 import { invoke } from '@tauri-apps/api/tauri';
-
-import { FunctionalComponent } from 'preact';
 import { useEffect, useCallback, useMemo } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
-
+import { title, leftChildElement, rightChildElement } from '../signals/Menu';
 import { Howl } from 'howler';
-import { ArrowUp, Folder, File, AlertCircle } from 'react-feather';
+import { ArrowUp, Folder, File, AlertCircle, RefreshCw } from 'react-feather';
 import Loading from '../templates/Loading';
-import { title, childElement } from '../signals/Menu';
 import './Browse.scss';
 
 const route: Signal<string> = signal('');
-const drive: Signal<string> = signal('');
+const currentDrive: Signal<string> = signal('');
 const drives: Signal<string[]> = signal([]);
 const files: Signal<string[]> = signal([]);
-const loading: Signal<boolean> = signal(false);
+const isLoading: Signal<boolean> = signal(false);
+const searchInput: Signal<string> = signal('');
 
-interface MenuElementProps {
+interface LeftMenuElementProps {
   onDriveChange: (event: Event) => void;
+  onRefresh: () => void;
+  goBack: () => void;
 }
 
-const MenuElement: FunctionalComponent<MenuElementProps> = ({
+function LeftMenuElement({
   onDriveChange,
-}) => {
+  onRefresh,
+  goBack,
+}: LeftMenuElementProps) {
   return (
-    <div className='absolute left-12'>
+    <div className='flex items-center'>
+      <RefreshCw
+        className='bg-transparent border-none cursor-pointer ml-2'
+        onClick={onRefresh}
+      />
+      <ArrowUp
+        className='bg-transparent border-none cursor-pointer ml-2'
+        onClick={goBack}
+      />
       <select
-        value={drive.value}
+        value={currentDrive.value}
         onChange={onDriveChange}
-        className='block w-full leading-tight bg-black-3 bg-transparent'
+        className='block appearance-none bg-black-2 outline-none h-[28px] rounded px-2 ml-2'
       >
         {drives.value.map((driveOption) => (
           <option key={driveOption} value={driveOption}>
@@ -38,18 +48,48 @@ const MenuElement: FunctionalComponent<MenuElementProps> = ({
       </select>
     </div>
   );
-};
+}
+
+function RightMenuElement() {
+  const handleSearchInputChange = useCallback((event: Event) => {
+    searchInput.value = (event.target as HTMLInputElement).value;
+  }, []);
+
+  return (
+    <div className='flex items-center'>
+      <input
+        type='text'
+        placeholder='Search...'
+        value={searchInput.value}
+        onInput={handleSearchInputChange}
+        className='block appearance-none bg-black-2 outline-none h-[28px] rounded px-2 mr-2'
+      />
+    </div>
+  );
+}
 
 function Browse() {
   useEffect(() => {
+    isLoading.value = false;
     title.value = 'Browse';
 
     const initializeBrowse = async () => {
       try {
         await fetchMountPaths();
-        route.value = drive.value;
-        title.value += ` [${route.value}]`;
-        childElement.value = <MenuElement onDriveChange={handleDriveChange} />;
+
+        route.value = currentDrive.value;
+        title.value = `Browse [${limitTextLength(route.value, 20, true)}]`;
+        leftChildElement.value = (
+          <LeftMenuElement
+            onDriveChange={handleDriveChange}
+            onRefresh={handleRefresh}
+            goBack={() =>
+              navigate(route.value.replace(/\/[^\/]*\/?$/, '/'), true, true)
+            }
+          />
+        );
+        rightChildElement.value = <RightMenuElement />;
+
         await fetchRouteContent();
       } catch (error) {
         console.error('Error initializing Browse:', error);
@@ -63,7 +103,7 @@ function Browse() {
     try {
       const fetchedDrives: string[] = await invoke('get_mount_points', {});
       drives.value = fetchedDrives;
-      drive.value = fetchedDrives[0];
+      currentDrive.value = fetchedDrives[0];
     } catch (error) {
       console.error('Error fetching mount points:', error);
     }
@@ -71,7 +111,7 @@ function Browse() {
 
   const fetchRouteContent = useCallback(
     async (dirPath: string = route.value) => {
-      loading.value = true;
+      isLoading.value = true;
       try {
         const fetchedFiles: string[] = await invoke('get_files', {
           dirPath,
@@ -80,14 +120,14 @@ function Browse() {
       } catch (error) {
         console.error('Error fetching file:', error);
       } finally {
-        loading.value = false;
+        isLoading.value = false;
       }
     },
     []
   );
 
   const openFile = useCallback(async (filePath: string) => {
-    loading.value = true;
+    isLoading.value = true;
     try {
       await invoke('run_file', {
         filePath,
@@ -95,7 +135,7 @@ function Browse() {
     } catch (error) {
       console.error('Error fetching file:', error);
     } finally {
-      loading.value = false;
+      isLoading.value = false;
     }
   }, []);
 
@@ -109,6 +149,7 @@ function Browse() {
         route.value = newRoute;
         await fetchRouteContent(newRoute);
 
+        title.value = `Browse [${limitTextLength(route.value, 20, true)}]`;
         new Howl({
           src: [`/${isFull ? 'backward' : 'forward'}.mp3`],
         }).play();
@@ -117,15 +158,17 @@ function Browse() {
     [fetchRouteContent]
   );
 
-  const handleDriveChange = useCallback(
-    async (event: Event) => {
-      const selectedDrive = (event.target as HTMLSelectElement).value;
-      drive.value = selectedDrive;
-      route.value = drive.value;
-      await navigate(drive.value, true, true);
-    },
-    [navigate]
-  );
+  const handleDriveChange = useCallback(async (event: Event) => {
+    const selectedDrive = (event.target as HTMLSelectElement).value;
+    currentDrive.value = selectedDrive;
+    route.value = currentDrive.value;
+    await fetchRouteContent(currentDrive.value);
+  }, []);
+
+  const handleRefresh = useCallback(async () => {
+    await fetchMountPaths();
+    await fetchRouteContent(route.value);
+  }, [fetchMountPaths, fetchRouteContent]);
 
   const getFileNameWithoutExtension = useCallback(
     (fileName: string): string => {
@@ -148,10 +191,14 @@ function Browse() {
   }, []);
 
   const limitTextLength = useCallback(
-    (text: string, maxLength: number): string => {
-      return text.length > maxLength
-        ? `${text.substring(0, maxLength)}...`
-        : text;
+    (text: string, maxLength: number, reverse: boolean = false): string => {
+      if (text.length > maxLength) {
+        return reverse
+          ? `...${text.substring(text.length - maxLength)}`
+          : `${text.substring(0, maxLength)}...`;
+      }
+
+      return text;
     },
     []
   );
@@ -160,15 +207,24 @@ function Browse() {
     return route.value.replace(/\/[^\/]*\/?$/, '/') === route.value;
   }, [route.value]);
 
+  // Filter files based on search input
+  const filteredFiles = useMemo(() => {
+    return files.value.filter((file) =>
+      file.toLowerCase().includes(searchInput.value.toLowerCase())
+    );
+  }, [files.value, searchInput.value]);
+
   return (
-    <div className='flex flex-col w-full min-h-full justify-center items-center'>
-      <h1 className='text-center mt-8 text-3xl font-bold my-8'>
-        {route.value}
-      </h1>
-      {loading.value ? (
-        <div className='text-xl font-bold mb-6'>
-          <Loading />
-        </div>
+    <div className='flex flex-col w-full min-h-full justify-center items-center pt-8 py-4 pb-4'>
+      {isLoading.value ? (
+        <>
+          <h1 className='text-center mt-8 text-3xl font-bold my-8'>
+            Now loading...
+          </h1>
+          <div className='text-xl font-bold'>
+            <Loading />
+          </div>
+        </>
       ) : (
         <div className='grid gap-2 grid-cols-1 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10'>
           {!isRoot && (
@@ -182,41 +238,49 @@ function Browse() {
               ..
             </div>
           )}
-          {/* TODO: Make navigate() not possible for /^\(OS ERROR \d+\)$/.test(getFileExtension(item)) */}
-          {files.value.map((item: string, index: number) => (
-            <div
-              className='flex flex-col items-center justify-center cursor-pointer mb-2 cell text-center custom-break'
-              key={index}
-              onClick={() => navigate(item, item.endsWith('/'), false)}
-              title={item}
-            >
-              {item.endsWith('/') ? (
-                <>
-                  <Folder className='min-w-6 min-h-6 icon mb-2' />
-                  {limitTextLength(item.substring(0, item.length - 1), 46)}
-                </>
-              ) : (
-                <div className='flex flex-col items-center justify-center'>
-                  {/^\(OS ERROR \d+\)$/.test(getFileExtension(item)) ? (
-                    <>
-                      <AlertCircle className='min-w-6 min-h-6 icon mb-2' />
-                      <span className='text-xs font-bold'>
-                        {getFileExtension(item)}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <File className='min-w-6 min-h-6 icon mb-2' />
-                      <span className='text-xs font-bold'>
-                        {getFileExtension(item)}
-                      </span>
-                      {limitTextLength(getFileNameWithoutExtension(item), 48)}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+          {filteredFiles.map((item: string, index: number) => {
+            const isErrorFile = /^\(OS ERROR \d+\)$/.test(
+              getFileExtension(item)
+            );
+            return (
+              <div
+                className={`flex flex-col items-center justify-center cursor-pointer mb-2 cell text-center custom-break ${
+                  isErrorFile ? 'disabled' : ''
+                }`}
+                key={index}
+                onClick={() =>
+                  !isErrorFile && navigate(item, item.endsWith('/'), false)
+                }
+                title={item}
+              >
+                {item.endsWith('/') ? (
+                  <>
+                    <Folder className='min-w-6 min-h-6 icon mb-2' />
+                    {limitTextLength(item.substring(0, item.length - 1), 46)}
+                  </>
+                ) : (
+                  <div className='flex flex-col items-center justify-center'>
+                    {isErrorFile ? (
+                      <>
+                        <AlertCircle className='min-w-6 min-h-6 icon mb-2' />
+                        <span className='text-xs font-bold'>
+                          {getFileExtension(item)}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <File className='min-w-6 min-h-6 icon mb-2' />
+                        <span className='text-xs font-bold'>
+                          {getFileExtension(item)}
+                        </span>
+                        {limitTextLength(getFileNameWithoutExtension(item), 48)}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
