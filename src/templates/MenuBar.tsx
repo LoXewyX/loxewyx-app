@@ -1,8 +1,10 @@
-import { useEffect } from 'preact/hooks';
 import { appWindow } from '@tauri-apps/api/window';
-import { isMenuToggled, title, childElement } from '../signals/Menu';
-import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
+
+import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
+
+import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
+import { isMenuToggled, title, childElement } from '../signals/Menu';
 
 const isMaximized = signal(false);
 const windowTitle = signal('');

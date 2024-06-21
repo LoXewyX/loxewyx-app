@@ -11,7 +11,7 @@ $base-white-3: #e7e7e7;
 $navbar-height: 40px;
 
 html {
-  overflow: hidden;
+  user-select: none;
 }
 
 .nav\:min-h-screen {
@@ -122,4 +122,8 @@ html {
   .justify-responsive {
     justify-content: start;
   }
+}
+
+select::-ms-expand {
+  display: none;
 }

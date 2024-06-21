@@ -1,7 +1,7 @@
 import { Loader } from 'react-feather';
 
-function Loading() {
+const Loading = () => {
   return <Loader className='animate-spin' />;
-}
+};
 
 export default Loading;

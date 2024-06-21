@@ -1,32 +1,49 @@
 import { invoke } from '@tauri-apps/api/tauri';
+
+import { ComponentType } from 'preact';
 import { Link } from 'preact-router';
-import { Folder, Home, Info, Moon, Sun } from 'react-feather';
 import { useEffect } from 'preact/hooks';
 import { isDarkTheme } from '../signals/DarkTheme';
 import { childElement, isMenuToggled } from '../signals/Menu';
 
+import { Folder, Home, Info, Moon, Sun } from 'react-feather';
+
 function Sidebar() {
   useEffect(() => {
-    document.getElementById('root')!.className = isDarkTheme.value
-      ? 'dark'
-      : 'light';
-  }, []);
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.className = isDarkTheme.value ? 'dark' : 'light';
+    }
+  }, [isDarkTheme.value]);
 
-  const toggleisDarkTheme = () => {
+  const toggleTheme = async () => {
     isDarkTheme.value = !isDarkTheme.value;
-    document.getElementById('root')!.className = isDarkTheme.value
-      ? 'dark'
-      : 'light';
-    const updateTheme = async () => {
-      await invoke('set_config', { key: 'isDark', value: isDarkTheme.value });
-    };
-    updateTheme();
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.className = isDarkTheme.value ? 'dark' : 'light';
+    }
+    await invoke('set_config', { key: 'isDark', value: isDarkTheme.value });
   };
 
-  const onNavigate = () => {
-    isMenuToggled.value = false;
-    childElement.value = null;
+  const handleNavigate = (event: MouseEvent) => {
+    const target = event.currentTarget as HTMLAnchorElement;
+    if (target.href !== window.location.href) {
+      isMenuToggled.value = false;
+      childElement.value = null;
+    }
   };
+
+  interface LinkProps {
+    href: string;
+    icon: ComponentType<{ size: number, className: string }>;
+    label: string;
+  }
+
+  const links: LinkProps[] = [
+    { href: '/', icon: Home, label: 'Home' },
+    { href: '/browse', icon: Folder, label: 'Browse' },
+    { href: '/about', icon: Info, label: 'About' }
+  ];
 
   return (
     <>
@@ -37,54 +54,34 @@ function Sidebar() {
       >
         <nav className='flex flex-col justify-between p-4 nav:min-h-screen mb-12'>
           <div className='overflow-y-auto'>
-            <Link
-              href='/'
-              className='flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
-              onClick={(event) => {
-                if (event.currentTarget.href !== window.location.href) {
-                  onNavigate();
-                }
-              }}
-            >
-              <Home size={24} className='mr-2' />
-              Home
-            </Link>
-            <Link
-              href='/browse'
-              className='flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
-              onClick={(event) => {
-                if (event.currentTarget.href !== window.location.href) {
-                  onNavigate();
-                }
-              }}
-            >
-              <Folder size={24} className='mr-2' />
-              Browse
-            </Link>
+            {links.map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className='flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
+                onClick={handleNavigate}
+              >
+                <Icon size={24} className='mr-2' />
+                {label}
+              </Link>
+            ))}
           </div>
           <div className='flex flex-col justify-end'>
-            <Link
-              href='/about'
-              className='flex items-center p-2 mb-2 rounded txt.white-2 hover:bg-black-2'
-              onClick={(event) => {
-                if (event.currentTarget.href !== window.location.href) {
-                  onNavigate();
-                }
-              }}
-            >
-              <Info size={24} className='mr-2' />
-              About
-            </Link>
             <button
-              className='font-normal text-base flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2 '
-              onClick={toggleisDarkTheme}
+              className='font-normal text-base flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
+              onClick={toggleTheme}
             >
               {isDarkTheme.value ? (
-                <Sun size={24} className='mr-2' />
+                <>
+                  <Sun size={24} className='mr-2' />
+                  Light Mode
+                </>
               ) : (
-                <Moon size={24} className='mr-2' />
+                <>
+                  <Moon size={24} className='mr-2' />
+                  Dark Mode
+                </>
               )}
-              {isDarkTheme.value ? 'Light Mode' : 'Dark Mode'}
             </button>
           </div>
         </nav>

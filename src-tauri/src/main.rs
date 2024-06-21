@@ -7,6 +7,7 @@ use serde_json::{Map, Value};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
+use std::process::Command;
 
 /* JSON Config */
 
@@ -112,8 +113,29 @@ fn get_mount_points() -> Vec<String> {
             }
         }
     }
-    mount_points.push("D:/".to_string());
+    
     mount_points
+}
+
+#[tauri::command]
+fn run_file(file_path: &str) {
+    let output = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .args(&["/C", "start", "", file_path])
+            .output()
+            .expect("Failed to open file")
+    } else if cfg!(target_os = "linux") {
+        Command::new("xdg-open")
+            .arg(file_path)
+            .output()
+            .expect("Failed to open file")
+    } else {
+        panic!("Unsupported operating system");
+    };
+
+    if !output.status.success() {
+        eprintln!("Error opening file: {:?}", output);
+    }
 }
 
 fn main() {
@@ -122,7 +144,8 @@ fn main() {
             get_config,
             set_config,
             get_files,
-            get_mount_points
+            get_mount_points,
+            run_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

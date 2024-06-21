@@ -1,5 +1,5 @@
-import { Signal, signal } from '@preact/signals';
 import { VNode } from 'preact';
+import { Signal, signal } from '@preact/signals';
 
 const isMenuToggled: Signal<boolean> = signal(false);
 const title: Signal<string> = signal('Ekilox');

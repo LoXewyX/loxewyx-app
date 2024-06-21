@@ -49,7 +49,7 @@ function About() {
         </div>
         <h1 className='text-3xl font-bold txt-white-1 mb-4'>Ekilox</h1>
         <div className='grid grid-cols-2 gap-4 text-sm mb-4 txt-white-2'>
-          <b>Update: </b>
+          <b>Updated: </b>
           <div className='text-right'>06/24</div>
           <b>Version: </b>
           <div className='text-right'>0.0.1 (Alpha)</div>

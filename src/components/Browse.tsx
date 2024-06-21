@@ -1,15 +1,14 @@
-import { useEffect, useCallback, useMemo } from 'preact/hooks';
 import { invoke } from '@tauri-apps/api/tauri';
-import { signal } from '@preact/signals';
+
+import { FunctionalComponent } from 'preact';
+import { useEffect, useCallback, useMemo } from 'preact/hooks';
+import { Signal, signal } from '@preact/signals';
+
 import { Howl } from 'howler';
 import { ArrowUp, Folder, File, AlertCircle } from 'react-feather';
 import Loading from '../templates/Loading';
-import './Browse.scss';
 import { title, childElement } from '../signals/Menu';
-
-type Signal<T> = {
-  value: T;
-};
+import './Browse.scss';
 
 const route: Signal<string> = signal('');
 const drive: Signal<string> = signal('');
@@ -17,19 +16,19 @@ const drives: Signal<string[]> = signal([]);
 const files: Signal<string[]> = signal([]);
 const loading: Signal<boolean> = signal(false);
 
-const MenuElement = () => {
-  const handleDriveChange = (event: Event) => {
-    const selectedDrive = (event.target as HTMLSelectElement).value;
-    drive.value = selectedDrive;
-    route.value = drive.value;
-  };
+interface MenuElementProps {
+  onDriveChange: (event: Event) => void;
+}
 
+const MenuElement: FunctionalComponent<MenuElementProps> = ({
+  onDriveChange,
+}) => {
   return (
-    <div className='relative'>
+    <div className='absolute left-12'>
       <select
         value={drive.value}
-        onChange={handleDriveChange}
-        className='block w-full px-4 py-2 pr-8 rounded shadow leading-tight'
+        onChange={onDriveChange}
+        className='block w-full leading-tight bg-black-3 bg-transparent'
       >
         {drives.value.map((driveOption) => (
           <option key={driveOption} value={driveOption}>
@@ -41,15 +40,16 @@ const MenuElement = () => {
   );
 };
 
-const Browse = () => {
+function Browse() {
   useEffect(() => {
-    title.value = "Browse";
+    title.value = 'Browse';
 
     const initializeBrowse = async () => {
       try {
         await fetchMountPaths();
         route.value = drive.value;
-        childElement.value = <MenuElement />;
+        title.value += ` [${route.value}]`;
+        childElement.value = <MenuElement onDriveChange={handleDriveChange} />;
         await fetchRouteContent();
       } catch (error) {
         console.error('Error initializing Browse:', error);
@@ -70,15 +70,15 @@ const Browse = () => {
   }, []);
 
   const fetchRouteContent = useCallback(
-    async (newRoute: string = route.value) => {
+    async (dirPath: string = route.value) => {
       loading.value = true;
       try {
         const fetchedFiles: string[] = await invoke('get_files', {
-          dirPath: newRoute,
+          dirPath,
         });
         files.value = fetchedFiles;
       } catch (error) {
-        console.error('Error fetching files:', error);
+        console.error('Error fetching file:', error);
       } finally {
         loading.value = false;
       }
@@ -86,21 +86,45 @@ const Browse = () => {
     []
   );
 
+  const openFile = useCallback(async (filePath: string) => {
+    loading.value = true;
+    try {
+      await invoke('run_file', {
+        filePath,
+      });
+    } catch (error) {
+      console.error('Error fetching file:', error);
+    } finally {
+      loading.value = false;
+    }
+  }, []);
+
   const navigate = useCallback(
     async (path: string, isDir: boolean, isFull: boolean) => {
-      if (!isDir) return;
+      if (!isDir) openFile(route + path);
+      else {
+        const newRoute = isFull
+          ? path
+          : `${route.value.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+        route.value = newRoute;
+        await fetchRouteContent(newRoute);
 
-      const newRoute = isFull
-        ? path
-        : `${route.value.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
-      route.value = newRoute;
-      await fetchRouteContent(newRoute); // Wait for route content to be fetched before continuing
-
-      new Howl({
-        src: [`/${isFull ? 'backward' : 'forward'}.mp3`],
-      }).play();
+        new Howl({
+          src: [`/${isFull ? 'backward' : 'forward'}.mp3`],
+        }).play();
+      }
     },
     [fetchRouteContent]
+  );
+
+  const handleDriveChange = useCallback(
+    async (event: Event) => {
+      const selectedDrive = (event.target as HTMLSelectElement).value;
+      drive.value = selectedDrive;
+      route.value = drive.value;
+      await navigate(drive.value, true, true);
+    },
+    [navigate]
   );
 
   const getFileNameWithoutExtension = useCallback(
@@ -137,7 +161,7 @@ const Browse = () => {
   }, [route.value]);
 
   return (
-    <div className='flex flex-col w-full min-h-full justify-responsive items-center'>
+    <div className='flex flex-col w-full min-h-full justify-center items-center'>
       <h1 className='text-center mt-8 text-3xl font-bold my-8'>
         {route.value}
       </h1>
@@ -158,6 +182,7 @@ const Browse = () => {
               ..
             </div>
           )}
+          {/* TODO: Make navigate() not possible for /^\(OS ERROR \d+\)$/.test(getFileExtension(item)) */}
           {files.value.map((item: string, index: number) => (
             <div
               className='flex flex-col items-center justify-center cursor-pointer mb-2 cell text-center custom-break'
@@ -196,6 +221,6 @@ const Browse = () => {
       )}
     </div>
   );
-};
+}
 
 export default Browse;
