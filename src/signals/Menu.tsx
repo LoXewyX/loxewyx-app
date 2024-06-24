@@ -1,9 +1,9 @@
 import { VNode } from 'preact';
-import { Signal, signal } from '@preact/signals';
+import { signal } from '@preact/signals';
 
-const isMenuToggled: Signal<boolean> = signal(false);
-const title: Signal<string> = signal('Ekilox');
-const leftChildElement: Signal<VNode | null> = signal(null);
-const rightChildElement: Signal<VNode | null> = signal(null);
+const title= signal('Ekilox');
+const isMenuToggled = signal(false);
+const leftChildElement = signal<VNode | null>(null);
+const rightChildElement = signal<VNode | null>(null);
 
 export { isMenuToggled, title, leftChildElement, rightChildElement };

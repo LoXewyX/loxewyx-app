@@ -1,8 +1,6 @@
 import { appWindow } from '@tauri-apps/api/window';
-
 import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
-
 import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
 import {
   isMenuToggled,
@@ -71,70 +69,71 @@ const MenuBar = () => {
   };
 
   return (
-    <div
-      id='menu-bar'
-      className='flex items-center justify-between bg-black-3 txt-white-3 py-1 px-2 select-none z-50 fixed top-0 left-0 shadow-lg w-full'
-      data-tauri-drag-region
-    >
-      {/* Menu Toggle */}
-      <div className='flex'>
-        <button
-          className='flex items-center space-x-1 hover:txt-white-2'
-          onClick={toggleIsSidebarOpen}
-        >
-          <ChevronRight
-            className='transform transition-transform duration-300'
-            style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : ''}
-          />
-        </button>
-        {leftChildElement.value !== null ? (
-          <>
-            {leftChildElement.value}
-            <div class='ml-2 inline-block w-0.5 self-stretch bg-white-2'></div>
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
+    <>
+      {/* This trick is for resizing screen since data-tauri-drag-region makes it not being resizable */}
+      <div className='absolute top-0 left-0 z-50 w-full h-[5px] bg-none'></div>
+      <div className='absolute top-0 left-0 z-50 w-[5px] h-[50px] bg-none'></div>
+      <div className='absolute top-0 right-0 z-50 w-[5px] h-[50px] bg-none'></div>
 
-      {/* Title */}
-      <div className='block' data-tauri-drag-region>
-        {windowTitle.value}
-      </div>
+      {/* MenuBar */}
+      <div
+        id='menu-bar'
+        className='flex items-center justify-between bg-black-3 txt-white-3 py-1 px-2 select-none z-40 fixed top-0 left-0 shadow-lg w-full'
+        data-tauri-drag-region
+      >
+        <div className='flex'>
+          <button
+            className='flex items-center space-x-1 hover:txt-white-2'
+            onClick={toggleIsSidebarOpen}
+          >
+            <ChevronRight
+              className='transform transition-transform duration-300'
+              style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : {}}
+            />
+          </button>
+          {leftChildElement.value !== null && (
+            <>
+              {leftChildElement.value}
+              <div className='ml-2 inline-block w-0.5 self-stretch bg-white-2'></div>
+            </>
+          )}
+        </div>
 
-      {/* Window Controls */}
-      <div className='flex space-x-2'>
-        {rightChildElement.value !== null ? (
-          <>
-            <div class='mr-2 inline-block w-0.5 self-stretch bg-white-2'></div>
-            {rightChildElement.value}
-          </>
-        ) : (
-          <></>
-        )}
-        <ArrowUp
-          className='hover:txt-white-2 cursor-pointer'
-          style={{ transform: 'rotate(225deg)', color: '#1B8CB1' }}
-          onClick={handleMinimize}
-        />
-        {isMaximized.value ? (
-          <Minimize2
+        <div className='block' data-tauri-drag-region>
+          {windowTitle.value}
+        </div>
+
+        <div className='flex space-x-2'>
+          {rightChildElement.value !== null && (
+            <>
+              <div className='mr-2 inline-block w-0.5 self-stretch bg-white-2'></div>
+              {rightChildElement.value}
+            </>
+          )}
+          <ArrowUp
             className='hover:txt-white-2 cursor-pointer'
-            onClick={handleMaximize}
+            style={{ transform: 'rotate(225deg)', color: '#1B8CB1' }}
+            onClick={handleMinimize}
           />
-        ) : (
-          <Maximize2
+          {isMaximized.value ? (
+            <Minimize2
+              className='hover:txt-white-2 cursor-pointer'
+              onClick={handleMaximize}
+            />
+          ) : (
+            <Maximize2
+              className='hover:txt-white-2 cursor-pointer'
+              onClick={handleMaximize}
+            />
+          )}
+          <ArrowUp
             className='hover:txt-white-2 cursor-pointer'
-            onClick={handleMaximize}
+            style={{ transform: 'rotate(45deg)', color: '#F75353' }}
+            onClick={handleClose}
           />
-        )}
-        <ArrowUp
-          className='hover:txt-white-2 cursor-pointer'
-          style={{ transform: 'rotate(45deg)', color: '#F75353' }}
-          onClick={handleClose}
-        />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

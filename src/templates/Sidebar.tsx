@@ -1,8 +1,8 @@
 import { invoke } from '@tauri-apps/api/tauri';
 
 import { ComponentType } from 'preact';
-import { Link } from 'preact-router';
 import { useEffect } from 'preact/hooks';
+import { Link } from 'preact-router';
 import { isDarkTheme } from '../signals/DarkTheme';
 import {
   isMenuToggled,
@@ -18,7 +18,7 @@ function Sidebar() {
     if (rootElement) {
       rootElement.className = isDarkTheme.value ? 'dark' : 'light';
     }
-  }, [isDarkTheme.value]);
+  });
 
   const toggleTheme = async () => {
     isDarkTheme.value = !isDarkTheme.value;
@@ -55,7 +55,7 @@ function Sidebar() {
       <div
         className={`absolute left-0 bottom-0 nav:h-screen w-64 transform ${
           isMenuToggled.value ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-300 ease-in-out z-40 bg-black-1 txt-white-1`}
+        } transition-transform duration-300 ease-in-out z-30 bg-black-1 txt-white-1`}
       >
         <nav className='flex flex-col justify-between p-4 nav:min-h-screen mb-12'>
           <div className='overflow-y-auto'>
@@ -94,7 +94,7 @@ function Sidebar() {
 
       {/* Overlay */}
       <div
-        className={`fixed left-0 top-nav w-full min-h-screen bg-black z-30 transition-opacity duration-300 ease-in-out ${
+        className={`fixed left-0 top-nav w-full min-h-screen bg-black z-20 transition-opacity duration-300 ease-in-out ${
           isMenuToggled.value ? 'opacity-50' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => (isMenuToggled.value = false)}

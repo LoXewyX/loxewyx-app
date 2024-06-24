@@ -1,17 +1,33 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-
-$base-black-1: #242424;
-$base-white-1: #ebebeb;
-$base-black-2: #333;
-$base-white-2: #ccc;
-$base-black-3: #121212;
-$base-white-3: #e7e7e7;
-$navbar-height: 50px;
+@import "./global.scss";
 
 html {
   user-select: none;
+  overflow: hidden;
+}
+
+img {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+::-webkit-scrollbar {
+  width: 1em;
+}
+
+::-webkit-scrollbar-track {
+  background-color: $base-black-3;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: $base-black-2;
 }
 
 #menu-bar {
@@ -32,6 +48,16 @@ html {
 
 .bottom-minus-nav {
   bottom: -$navbar-height;
+}
+
+.justify-responsive {
+  justify-content: center;
+}
+
+@media (max-height: 860px) {
+  .justify-responsive {
+    justify-content: start;
+  }
 }
 
 #root.dark {
@@ -124,18 +150,4 @@ html {
   .txt-white-3 {
     color: $base-black-2;
   }
-}
-
-.justify-responsive {
-  justify-content: center;
-}
-
-@media (max-height: 860px) {
-  .justify-responsive {
-    justify-content: start;
-  }
-}
-
-select::-ms-expand {
-  display: none;
 }

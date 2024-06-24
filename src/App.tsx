@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api';
 
+import { useEffect } from 'preact/hooks';
 import { Router, Route } from 'preact-router';
 import { isDarkTheme } from './signals/DarkTheme';
 
@@ -11,7 +12,6 @@ import About from './components/About';
 import NotFound from './components/NotFound';
 
 import './App.scss';
-import { useEffect } from 'preact/hooks';
 
 function App() {
   // Dark theme fetch

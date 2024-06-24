@@ -1,20 +1,36 @@
+@import "../global.scss";
+
 .cell {
   position: relative;
   width: 150px;
   height: 150px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
+  padding-left: 2.5rem;
   transition: background-color 0.3s ease;
-  border-radius: 8px;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: $base-black-2;
+  }
+}
+
+#root.dark {
+  .cell:hover {
+    color: $base-white-2;
+    background-color: $base-black-2;
+  }
+}
+
+#root.light {
+  .cell:hover {
+    color: $base-black-2;
+    background-color: $base-white-2;
   }
 }
 
 .cell:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: $base-black-2;
 }
 
 .icon {

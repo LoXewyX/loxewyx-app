@@ -1,18 +1,20 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useEffect, useCallback, useMemo } from 'preact/hooks';
-import { Signal, signal } from '@preact/signals';
+import { signal } from '@preact/signals';
 import { title, leftChildElement, rightChildElement } from '../signals/Menu';
 import { Howl } from 'howler';
 import { ArrowUp, Folder, File, AlertCircle, RefreshCw } from 'react-feather';
+import { FixedSizeList as List, RendererProps } from 'react-window';
 import Loading from '../templates/Loading';
 import './Browse.scss';
 
-const route: Signal<string> = signal('');
-const currentDrive: Signal<string> = signal('');
-const drives: Signal<string[]> = signal([]);
-const files: Signal<string[]> = signal([]);
-const isLoading: Signal<boolean> = signal(false);
-const searchInput: Signal<string> = signal('');
+const listHeight = signal(0);
+const route = signal('');
+const currentDrive = signal('');
+const searchInput = signal('');
+const drives = signal<string[]>([]);
+const files = signal<string[]>([]);
+const isLoading = signal(false);
 
 interface LeftMenuElementProps {
   onDriveChange: (event: Event) => void;
@@ -83,9 +85,7 @@ function Browse() {
           <LeftMenuElement
             onDriveChange={handleDriveChange}
             onRefresh={handleRefresh}
-            goBack={() =>
-              navigate(route.value.replace(/\/[^\/]*\/?$/, '/'), true, true)
-            }
+            goBack={() => navigate(route.value, true, true)}
           />
         );
         rightChildElement.value = <RightMenuElement />;
@@ -99,11 +99,21 @@ function Browse() {
     initializeBrowse();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      listHeight.value = window.innerHeight - 50;
+    };
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const fetchMountPaths = useCallback(async () => {
     try {
       const fetchedDrives: string[] = await invoke('get_mount_points', {});
       drives.value = fetchedDrives;
-      currentDrive.value = fetchedDrives[0];
+      if (currentDrive.value === '') currentDrive.value = fetchedDrives[0];
     } catch (error) {
       console.error('Error fetching mount points:', error);
     }
@@ -113,9 +123,7 @@ function Browse() {
     async (dirPath: string = route.value) => {
       isLoading.value = true;
       try {
-        const fetchedFiles: string[] = await invoke('get_files', {
-          dirPath,
-        });
+        const fetchedFiles: string[] = await invoke('get_files', { dirPath });
         files.value = fetchedFiles;
       } catch (error) {
         console.error('Error fetching file:', error);
@@ -129,46 +137,44 @@ function Browse() {
   const openFile = useCallback(async (filePath: string) => {
     isLoading.value = true;
     try {
-      await invoke('run_file', {
-        filePath,
-      });
+      await invoke('run_file', { filePath });
     } catch (error) {
-      console.error('Error fetching file:', error);
+      console.error('Error opening file:', error);
     } finally {
       isLoading.value = false;
     }
   }, []);
 
   const navigate = useCallback(
-    async (path: string, isDir: boolean, isFull: boolean) => {
+    async (path: string, isDir: boolean, goBack: boolean) => {
       if (!isDir) openFile(route + path);
       else {
-        const newRoute = isFull
-          ? path
+        const newRoute = goBack
+          ? route.value.replace(/\/[^\/]*\/?$/, '/')
           : `${route.value.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
         route.value = newRoute;
         await fetchRouteContent(newRoute);
 
         title.value = `Browse [${limitTextLength(route.value, 20, true)}]`;
-        new Howl({
-          src: [`/${isFull ? 'backward' : 'forward'}.mp3`],
-        }).play();
+        new Howl({ src: [`/${goBack ? 'click2' : 'click3'}.mp3`] }).play();
       }
+    },
+    [fetchRouteContent, openFile]
+  );
+
+  const handleDriveChange = useCallback(
+    async (event: Event) => {
+      const selectedDrive = (event.target as HTMLSelectElement).value;
+      currentDrive.value = selectedDrive;
+      route.value = currentDrive.value;
+      await fetchRouteContent(currentDrive.value);
     },
     [fetchRouteContent]
   );
 
-  const handleDriveChange = useCallback(async (event: Event) => {
-    const selectedDrive = (event.target as HTMLSelectElement).value;
-    currentDrive.value = selectedDrive;
-    route.value = currentDrive.value;
-    await fetchRouteContent(currentDrive.value);
-  }, []);
-
   const handleRefresh = useCallback(async () => {
-    await fetchMountPaths();
     await fetchRouteContent(route.value);
-  }, [fetchMountPaths, fetchRouteContent]);
+  }, [fetchRouteContent]);
 
   const getFileNameWithoutExtension = useCallback(
     (fileName: string): string => {
@@ -197,93 +203,82 @@ function Browse() {
           ? `...${text.substring(text.length - maxLength)}`
           : `${text.substring(0, maxLength)}...`;
       }
-
       return text;
     },
     []
   );
 
-  const isRoot = useMemo(() => {
-    return route.value.replace(/\/[^\/]*\/?$/, '/') === route.value;
-  }, [route.value]);
-
-  // Filter files based on search input
   const filteredFiles = useMemo(() => {
-    return files.value.filter((file) =>
+    return files.value.filter((file: string) =>
       file.toLowerCase().includes(searchInput.value.toLowerCase())
     );
   }, [files.value, searchInput.value]);
 
-  return (
-    <div className='flex flex-col w-full min-h-full justify-center items-center pt-8 py-4 pb-4'>
-      {isLoading.value ? (
-        <>
-          <h1 className='text-center mt-8 text-3xl font-bold my-8'>
-            Now loading...
-          </h1>
-          <div className='text-xl font-bold'>
-            <Loading />
-          </div>
-        </>
-      ) : (
-        <div className='grid gap-2 grid-cols-1 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10'>
-          {!isRoot && (
-            <div
-              className='flex flex-col items-center justify-center cursor-pointer mb-2 cell'
-              onClick={() =>
-                navigate(route.value.replace(/\/[^\/]*\/?$/, '/'), true, true)
-              }
-            >
-              <ArrowUp className='min-w-6 min-h-6 icon mb-2' title='Go back' />
-              ..
+  const ItemRenderer = ({ index, style }: RendererProps) => {
+    const item = filteredFiles[index];
+    const isErrorFile = /^\(OS ERROR \d+\)$/.test(getFileExtension(item));
+    return (
+      <div
+        className='cell'
+        style={style}
+        onClick={() =>
+          !isErrorFile && navigate(item, item.endsWith('/'), false)
+        }
+      >
+        <div
+          className={`flex flex-col items-start justify-start cursor-pointer mb-2 custom-break ${
+            isErrorFile ? 'disabled' : ''
+          }`}
+          title={item}
+        >
+          {item.endsWith('/') ? (
+            <>
+              <Folder className='icon mb-2' />
+              {limitTextLength(item.substring(0, item.length - 1), 46)}
+            </>
+          ) : (
+            <div className='flex flex-col items-center justify-start'>
+              {isErrorFile ? (
+                <>
+                  <AlertCircle className='icon mb-2' />
+                  <span className='text-xs font-bold'>
+                    {getFileExtension(item)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <File className='icon mb-2' />
+                  <span className='text-xs font-bold'>
+                    {getFileExtension(item)}
+                  </span>
+                  {limitTextLength(getFileNameWithoutExtension(item), 48)}
+                </>
+              )}
             </div>
           )}
-          {filteredFiles.map((item: string, index: number) => {
-            const isErrorFile = /^\(OS ERROR \d+\)$/.test(
-              getFileExtension(item)
-            );
-            return (
-              <div
-                className={`flex flex-col items-center justify-center cursor-pointer mb-2 cell text-center custom-break ${
-                  isErrorFile ? 'disabled' : ''
-                }`}
-                key={index}
-                onClick={() =>
-                  !isErrorFile && navigate(item, item.endsWith('/'), false)
-                }
-                title={item}
-              >
-                {item.endsWith('/') ? (
-                  <>
-                    <Folder className='min-w-6 min-h-6 icon mb-2' />
-                    {limitTextLength(item.substring(0, item.length - 1), 46)}
-                  </>
-                ) : (
-                  <div className='flex flex-col items-center justify-center'>
-                    {isErrorFile ? (
-                      <>
-                        <AlertCircle className='min-w-6 min-h-6 icon mb-2' />
-                        <span className='text-xs font-bold'>
-                          {getFileExtension(item)}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <File className='min-w-6 min-h-6 icon mb-2' />
-                        <span className='text-xs font-bold'>
-                          {getFileExtension(item)}
-                        </span>
-                        {limitTextLength(getFileNameWithoutExtension(item), 48)}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </div>
-      )}
+      </div>
+    );
+  };
+
+  return isLoading.value ? (
+    <div className='nav:min-h-screen flex flex-col align-middle justify-center'>
+      <div className='text-center mt-8 text-3xl font-bold my-8'>
+        Now loading...
+      </div>
+      <div className='text-center text-xl font-bold'>
+        <Loading />
+      </div>
     </div>
+  ) : (
+    <List
+      height={listHeight.value}
+      width={'100%'}
+      itemCount={filteredFiles.length}
+      itemSize={150}
+    >
+      {ItemRenderer}
+    </List>
   );
 }
 
