@@ -226,7 +226,7 @@ function Browse() {
         }
       >
         <div
-          className={`flex flex-col items-start justify-start cursor-pointer mb-2 custom-break ${
+          className={`flex flex-col items-center cursor-pointer mb-2 custom-break ${
             isErrorFile ? 'disabled' : ''
           }`}
           title={item}
@@ -237,7 +237,7 @@ function Browse() {
               {limitTextLength(item.substring(0, item.length - 1), 46)}
             </>
           ) : (
-            <div className='flex flex-col items-start justify-start'>
+            <div className='flex flex-col items-center justify-center'>
               {isErrorFile ? (
                 <>
                   <AlertCircle className='icon mb-2' />
