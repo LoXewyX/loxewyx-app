@@ -1,62 +1,86 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { signal } from '@preact/signals';
 import { isDarkTheme } from '../signals/DarkTheme';
 import { title } from '../signals/Menu';
-import MonacoEditor, { OnChange } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
 import { content } from '../signals/Editor';
+import Loading from '../templates/Loading';
+import MonacoEditor, { OnChange, useMonaco } from '@monaco-editor/react';
+
+const monacoSignal = signal<ReturnType<typeof useMonaco> | null>(null);
 
 function Editor() {
+  const monacoInstance = useMonaco();
+  const [isMonacoReady, setIsMonacoReady] = useState(false);
+
   useEffect(() => {
-    // Register a custom language
-    monaco.languages.register({ id: 'customLanguage' });
+    if (monacoInstance !== null) {
+      monacoSignal.value = monacoInstance;
+      setIsMonacoReady(true);
 
-    // Define the custom language's tokens
-    monaco.languages.setMonarchTokensProvider('customLanguage', {
-      tokenizer: {
-        root: [
-          [/\[error.*/, 'custom-error'],
-          [/\[notice.*/, 'custom-notice'],
-          [/\[info.*/, 'custom-info'],
-          [/\[[a-zA-Z 0-9:]+\]/, 'custom-date'],
-        ],
-      },
-    });
+      monacoInstance.languages.register({ id: 'ekilox' });
 
-    // Register completion items provider for the custom language
-    monaco.languages.registerCompletionItemProvider('customLanguage', {
-      provideCompletionItems: (
-        model: monaco.editor.ITextModel,
-        position: monaco.Position
-      ) => {
-        const word = model.getWordUntilPosition(position);
-        const range = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn,
-        };
+      const keywords = [
+        'priv',
+        'prot',
+        'pub',
+        'pkg',
+        'use',
+        'bool',
+        'i8',
+        'i16',
+        'i32',
+        'i64',
+        'f32',
+        'f64',
+        'str',
+        'list',
+        'array',
+        'let',
+        'const',
+        'fn',
+        'lmb',
+      ];
+      monacoInstance.languages.setMonarchTokensProvider('ekilox', {
+        keywords,
+        tokenizer: {
+          root: [
+            [
+              /@?[a-zA-Z][\w$]*/,
+              {
+                cases: {
+                  '@keywords': 'keyword',
+                  '@default': 'variable',
+                },
+              },
+            ],
+            [/".*?"/, 'string'],
+            [/\/\//, 'comment'],
+          ],
+        },
+      });
 
-        const suggestions: monaco.languages.CompletionItem[] = [
-          {
-            label: 'customText',
-            kind: monaco.languages.CompletionItemKind.Text,
-            insertText: 'customText',
+      monacoInstance.languages.registerCompletionItemProvider('ekilox', {
+        provideCompletionItems: (model, position) => {
+          const word = model.getWordUntilPosition(position);
+          const range = new monacoInstance.Range(
+            position.lineNumber,
+            word.startColumn,
+            position.lineNumber,
+            word.endColumn
+          );
+          const suggestions = keywords.map((k) => ({
+            label: k,
+            kind: monacoInstance.languages.CompletionItemKind.Keyword,
+            insertText: k,
             range: range,
-          },
-          {
-            label: 'customSnippet',
-            kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: ['customSnippet(${1:param}) {', '\t$0', '}'].join('\n'),
-            range: range,
-          },
-        ];
+          }));
+          return { suggestions };
+        },
+      });
+    }
+  }, [monacoInstance]);
 
-        return { suggestions };
-      },
-    });
-  }, []);
-
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<any | null>(null);
 
   useEffect(() => {
     title.value = 'Editor';
@@ -72,7 +96,7 @@ function Editor() {
         subscription.dispose();
       };
     }
-  }, []);
+  }, [isMonacoReady]);
 
   const handleChange: OnChange = (value) => {
     if (value !== undefined) {
@@ -81,14 +105,28 @@ function Editor() {
     }
   };
 
+  if (!isMonacoReady) {
+    return (
+      <div className='nav:min-h-screen flex flex-col align-middle justify-center'>
+        <div className='text-center mt-8 text-3xl font-bold my-8'>
+          Now loading...
+        </div>
+        <div className='text-center text-xl font-bold'>
+          <Loading />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <MonacoEditor
         height='calc(100vh - 50px)'
-        defaultLanguage='customLanguage'
-        theme={isDarkTheme.value ? 'vs-dark' : 'light'}
+        defaultLanguage='ekilox'
+        theme={isDarkTheme.value ? 'vs-dark' : 'vs'}
         defaultValue={content.value}
         onChange={handleChange}
+        editorDidMount={(editor: any | null) => (editorRef.current = editor)}
       />
     </div>
   );

@@ -237,7 +237,7 @@ function Browse() {
               {limitTextLength(item.substring(0, item.length - 1), 46)}
             </>
           ) : (
-            <div className='flex flex-col items-center justify-start'>
+            <div className='flex flex-col items-start justify-start'>
               {isErrorFile ? (
                 <>
                   <AlertCircle className='icon mb-2' />
