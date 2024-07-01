@@ -1,9 +1,7 @@
 import { getName, getVersion, getTauriVersion } from '@tauri-apps/api/app';
-
 import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { title } from '../signals/Menu';
-
 import { Howl } from 'howler';
 import { GitHub, Twitter, Coffee } from 'react-feather';
 import ekilox from '../assets/ekilox.svg';

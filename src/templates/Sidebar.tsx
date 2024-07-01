@@ -1,5 +1,4 @@
 import { invoke } from '@tauri-apps/api/tauri';
-
 import { ComponentType } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { Link } from 'preact-router';
@@ -9,8 +8,19 @@ import {
   leftChildElement,
   rightChildElement,
 } from '../signals/Menu';
+import { Moon, Sun, Folder, Edit3, Info } from 'react-feather';
 
-import { Folder, Edit3, Info, Moon, Sun } from 'react-feather';
+interface LinkProps {
+  href: string;
+  icon: ComponentType<{ size: number; className: string }>;
+  label: string;
+}
+
+const links: LinkProps[] = [
+  { href: '/', icon: Edit3, label: 'Editor' },
+  { href: '/browse', icon: Folder, label: 'Browse' },
+  { href: '/about', icon: Info, label: 'About' },
+];
 
 function Sidebar() {
   useEffect(() => {
@@ -38,20 +48,9 @@ function Sidebar() {
     }
   };
 
-  interface LinkProps {
-    href: string;
-    icon: ComponentType<{ size: number; className: string }>;
-    label: string;
-  }
-
-  const links: LinkProps[] = [
-    { href: '/', icon: Edit3, label: 'Editor' },
-    { href: '/browse', icon: Folder, label: 'Browse' },
-    { href: '/about', icon: Info, label: 'About' },
-  ];
-
   return (
     <>
+      {/* Sidebar */}
       <div
         className={`absolute left-0 bottom-0 nav:h-screen w-64 transform ${
           isMenuToggled.value ? 'translate-x-0' : '-translate-x-full'
