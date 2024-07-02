@@ -1,22 +1,24 @@
 [package]
 name = "loxewyx-app"
-version = "1.0.0"
+version = "0.0.1"
 description = "A Tauri App"
 authors = ["loxewyx"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "loxewyx_app_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
 [build-dependencies]
-tauri-build = { version = "1", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "window-unminimize", "window-unmaximize", "window-set-minimizable", "window-start-dragging", "window-minimize", "window-maximize", "window-close", "window-set-closable", "window-set-maximizable", "window-set-min-size", "window-set-title", "shell-open"] }
+tauri = { version = "2.0.0-beta", features = [] }
+tauri-plugin-shell = "2.0.0-beta"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 jwalk = "0.8.1"
 mountpoints = "0.2.1"
 
-[features]
-# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]

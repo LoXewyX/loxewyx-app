@@ -1,4 +1,4 @@
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/window';
 import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
@@ -9,6 +9,7 @@ import {
   rightChildElement,
 } from '../signals/Menu';
 
+const appWindow = signal(getCurrent());
 const isMaximized = signal(false);
 const windowTitle = signal('');
 
@@ -17,13 +18,13 @@ const MenuBar = () => {
     const updateWindowTitle = (value: string) => {
       value = `${value} - Ekilox`;
       windowTitle.value = value;
-      appWindow.setTitle(value);
+      appWindow.value.setTitle(value);
     };
 
     const unsubscribeTitle = title.subscribe(updateWindowTitle);
 
     const checkMaximized = () => {
-      appWindow.isMaximized().then(setMaximized);
+      appWindow.value.isMaximized().then(setMaximized);
     };
 
     const setMaximized = (maximized: boolean) => {
@@ -32,8 +33,11 @@ const MenuBar = () => {
 
     checkMaximized();
 
-    const unlistenMaximize = appWindow.listen('tauri://resize', checkMaximized);
-    const unlistenUnmaximize = appWindow.listen(
+    const unlistenMaximize = appWindow.value.listen(
+      'tauri://resize',
+      checkMaximized
+    );
+    const unlistenUnmaximize = appWindow.value.listen(
       'tauri://unmaximize',
       checkMaximized
     );
@@ -50,22 +54,22 @@ const MenuBar = () => {
   };
 
   const handleMinimize = () => {
-    appWindow.minimize();
+    appWindow.value.minimize();
   };
 
   const handleMaximize = () => {
-    appWindow.isMaximized().then((maximized) => {
+    appWindow.value.isMaximized().then((maximized) => {
       if (maximized) {
-        appWindow.unmaximize();
+        appWindow.value.unmaximize();
       } else {
-        appWindow.maximize();
+        appWindow.value.maximize();
       }
       isMaximized.value = !maximized;
     });
   };
 
   const handleClose = () => {
-    appWindow.close();
+    appWindow.value.close();
   };
 
   return (

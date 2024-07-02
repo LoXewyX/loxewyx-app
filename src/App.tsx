@@ -1,5 +1,6 @@
-import { invoke } from '@tauri-apps/api';
-import { useEffect, useState } from 'preact/hooks';
+import { invoke } from '@tauri-apps/api/core';
+import { useEffect } from 'preact/hooks';
+import { signal } from '@preact/signals';
 import { Router, Route, RouterOnChangeArgs } from 'preact-router';
 import { isDarkTheme } from './signals/DarkTheme';
 import MenuBar from './templates/MenuBar';
@@ -10,7 +11,6 @@ import Browse from './components/Browse';
 import About from './components/About';
 import './App.scss';
 
-// Mapping of paths to components
 const routeToComponentMap: {
   [path: string]: any;
 } = {
@@ -19,9 +19,9 @@ const routeToComponentMap: {
   '/about': About,
 };
 
-const App: React.FC = () => {
-  const [currentComponent, setCurrentComponent] = useState<string>('Editor');
+const currentComponent = signal('Editor');
 
+const App: React.FC = () => {
   // Dark theme fetch
   useEffect(() => {
     const fetchTheme = async () => {
@@ -67,7 +67,7 @@ const App: React.FC = () => {
 
   const handleRouteChange = (event: RouterOnChangeArgs) => {
     const componentName = routeToComponentMap[event.url]?.name || 'NotFound';
-    setCurrentComponent(componentName);
+    currentComponent.value = componentName;
   };
 
   return (
@@ -75,7 +75,7 @@ const App: React.FC = () => {
       <MenuBar />
       <Sidebar />
       <div
-        id={currentComponent}
+        id={currentComponent.value}
         className='absolute bottom-0 nav:h-screen w-full bg-black-1 txt-white-1 overflow-y-auto'
       >
         <Router onChange={handleRouteChange}>

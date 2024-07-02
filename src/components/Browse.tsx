@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useCallback, useMemo } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { title, leftChildElement, rightChildElement } from '../signals/Menu';
