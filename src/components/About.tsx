@@ -1,6 +1,6 @@
+import { invoke } from '@tauri-apps/api/core';
 import { getName, getVersion, getTauriVersion } from '@tauri-apps/api/app';
-import { useEffect } from 'preact/hooks';
-import { signal } from '@preact/signals';
+import { signal, useSignalEffect } from '@preact/signals';
 import { title } from '../signals/Menu';
 import { Howl } from 'howler';
 import { GitHub, Twitter, Coffee } from 'react-feather';
@@ -10,39 +10,37 @@ import './About.scss';
 const appName = signal('');
 const appVersion = signal('');
 const tauriVersion = signal('');
+const updatedDate = signal('');
 const isPingActive = signal(false);
 
 function About() {
-  useEffect(() => {
+  useSignalEffect(() => {
     title.value = 'About';
+    isPingActive.value = false;
 
     const handleRadiantEnd = () => {
       isPingActive.value = true;
-      new Howl({
+      const sound = new Howl({
         src: ['/ekilox.mp3'],
-      }).play();
-    };
-
-    const handlePingEnd = () => {
-      isPingActive.value = false;
-      const pingSpan = document.querySelector('.ping-span');
-      if (pingSpan) pingSpan.remove();
+      });
+      sound.play();
+      sound.once('end', () => {
+        isPingActive.value = false;
+        const pingSpan = document.querySelector('.ping-span');
+        if (pingSpan) pingSpan.remove();
+      });
     };
 
     const logoImg = document.querySelector('.logo-animation-container img');
     if (logoImg) logoImg.addEventListener('animationend', handleRadiantEnd);
 
-    const pingSpan = document.querySelector('.ping-span');
-    if (pingSpan) pingSpan.addEventListener('animationend', handlePingEnd);
-
     return () => {
       if (logoImg)
         logoImg.removeEventListener('animationend', handleRadiantEnd);
-      if (pingSpan) pingSpan.removeEventListener('animationend', handlePingEnd);
     };
   });
 
-  useEffect(() => {
+  useSignalEffect(() => {
     const fetchData = async () => {
       try {
         const [appVer, tauriVer, appNm] = await Promise.all([
@@ -50,9 +48,11 @@ function About() {
           getTauriVersion(),
           getName(),
         ]);
+
         appVersion.value = appVer;
         tauriVersion.value = tauriVer;
         appName.value = appNm;
+        updatedDate.value = await invoke('get_last_update_date', {});
       } catch (error) {
         console.error('Error fetching app and Tauri versions:', error);
       }
@@ -98,20 +98,21 @@ function About() {
         </div>
         <div className='flex flex-col md:flex-row md:space-x-8 mb-2'>
           <div className='grid grid-cols-2 gap-4 text-sm mb-4 txt-white-2'>
-            <b className='text-left'>Name:</b>
+            <b className='text-left'>Package name:</b>
             <div className='text-right'>{appName.value}</div>
-            {/* Replace with actual app name */}
             <b className='text-left'>Tauri version:</b>
             <div className='text-right'>{tauriVersion.value}</div>
           </div>
           <div className='grid grid-cols-2 gap-4 text-sm mb-4 txt-white-2'>
-            <b className='text-left'>Updated:</b>
-            <div className='text-right'>06/24</div>
+            <b className='text-left'>Updated date:</b>
+            <div className='text-right'>{updatedDate.value}</div>
             <b className='text-left'>Ekilox version:</b>
             <div className='text-right'>{appVersion.value}</div>
           </div>
         </div>
-        <div className='text-sm txt-white-2'>Created by LoXewyX</div>
+        <div className='text-sm txt-white-2'>
+          Created by LoXewyX
+        </div>
       </div>
     </div>
   );

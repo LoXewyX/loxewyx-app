@@ -1,6 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { useEffect } from 'preact/hooks';
-import { signal } from '@preact/signals';
+import { signal, useSignalEffect } from '@preact/signals';
 import { Router, Route, RouterOnChangeArgs } from 'preact-router';
 import { isDarkTheme } from './signals/DarkTheme';
 import MenuBar from './templates/MenuBar';
@@ -23,7 +22,7 @@ const currentComponent = signal('Editor');
 
 const App: React.FC = () => {
   // Dark theme fetch
-  useEffect(() => {
+  useSignalEffect(() => {
     const fetchTheme = async () => {
       try {
         isDarkTheme.value =
@@ -63,7 +62,7 @@ const App: React.FC = () => {
         }
       });
     };
-  }, []);
+  });
 
   const handleRouteChange = (event: RouterOnChangeArgs) => {
     const componentName = routeToComponentMap[event.url]?.name || 'NotFound';

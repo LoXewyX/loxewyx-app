@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { ComponentType } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useSignalEffect } from '@preact/signals';
 import { Link } from 'preact-router';
 import { isDarkTheme } from '../signals/DarkTheme';
 import {
@@ -23,7 +23,7 @@ const links: LinkProps[] = [
 ];
 
 function Sidebar() {
-  useEffect(() => {
+  useSignalEffect(() => {
     const rootElement = document.getElementById('root');
     if (rootElement) {
       rootElement.className = isDarkTheme.value ? 'dark' : 'light';

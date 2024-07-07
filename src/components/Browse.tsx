@@ -1,9 +1,16 @@
 import { invoke } from '@tauri-apps/api/core';
-import { useEffect, useCallback, useMemo } from 'preact/hooks';
-import { signal } from '@preact/signals';
+import { useCallback, useMemo } from 'preact/hooks';
+import { signal, useSignalEffect } from '@preact/signals';
 import { title, leftChildElement, rightChildElement } from '../signals/Menu';
 import { Howl } from 'howler';
-import { ArrowUp, Folder, File, AlertCircle, RefreshCw } from 'react-feather';
+import {
+  ArrowUp,
+  Folder,
+  File,
+  AlertCircle,
+  RefreshCw,
+  Search,
+} from 'react-feather';
 import { FixedSizeList as List, RendererProps } from 'react-window';
 import Loading from '../templates/Loading';
 import './Browse.scss';
@@ -22,11 +29,17 @@ interface LeftMenuElementProps {
   goBack: () => void;
 }
 
-function LeftMenuElement({
+const LeftMenuElement: preact.FunctionComponent<LeftMenuElementProps> = ({
   onDriveChange,
   onRefresh,
   goBack,
-}: LeftMenuElementProps) {
+}) => {
+  const canGoBack = signal(route.value !== currentDrive.value);
+
+  const handleGoBack = useCallback(() => {
+    if (canGoBack.value) goBack();
+  }, [canGoBack.value, goBack]);
+
   return (
     <div className='flex items-center'>
       <RefreshCw
@@ -34,8 +47,10 @@ function LeftMenuElement({
         onClick={onRefresh}
       />
       <ArrowUp
-        className='bg-transparent border-none cursor-pointer ml-2'
-        onClick={goBack}
+        className={`bg-transparent border-none cursor-pointer ml-2 ${
+          canGoBack.value ? '' : 'opacity-50 pointer-events-none'
+        }`}
+        onClick={handleGoBack}
       />
       <select
         value={currentDrive.value}
@@ -50,28 +65,43 @@ function LeftMenuElement({
       </select>
     </div>
   );
-}
+};
 
-function RightMenuElement() {
+const RightMenuElement: preact.FunctionComponent = () => {
+  const inputValue = signal(searchInput.value);
+
   const handleSearchInputChange = useCallback((event: Event) => {
-    searchInput.value = (event.target as HTMLInputElement).value;
+    inputValue.value = (event.target as HTMLInputElement).value;
   }, []);
 
+  const handleSearch = useCallback(() => {
+    searchInput.value = inputValue.value;
+  }, [inputValue.value]);
+
+  const handleEnter = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Enter') handleSearch();
+  }, [handleSearch]);
+
   return (
-    <div className='flex items-center'>
+    <div className='flex items-center relative'>
       <input
         type='text'
         placeholder='Search...'
         value={searchInput.value}
-        onInput={handleSearchInputChange}
-        className='block appearance-none bg-black-2 outline-none h-[28px] rounded px-2 mr-2'
+        onChange={handleSearchInputChange}
+        onKeyPress={handleEnter}
+        className='block appearance-none bg-black-2 outline-none h-[28px] rounded pl-2 pr-8 mr-2 w-48'
+      />
+      <Search
+        onClick={handleSearch}
+        className='absolute right-0 py-1 mr-3 top-1/2 transform -translate-y-1/2 cursor-pointer'
       />
     </div>
   );
-}
+};
 
-function Browse() {
-  useEffect(() => {
+const Browse: preact.FunctionComponent = () => {
+  useSignalEffect(() => {
     isLoading.value = false;
     title.value = 'Browse';
 
@@ -97,9 +127,9 @@ function Browse() {
     };
 
     initializeBrowse();
-  }, []);
+  });
 
-  useEffect(() => {
+  useSignalEffect(() => {
     const handleResize = () => {
       listHeight.value = window.innerHeight - 50;
     };
@@ -107,7 +137,7 @@ function Browse() {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  });
 
   const fetchMountPaths = useCallback(async () => {
     try {
@@ -214,7 +244,10 @@ function Browse() {
     );
   }, [files.value, searchInput.value]);
 
-  const ItemRenderer = ({ index, style }: RendererProps) => {
+  const ItemRenderer: preact.FunctionComponent<RendererProps> = ({
+    index,
+    style,
+  }) => {
     const item = filteredFiles[index];
     const isErrorFile = /^\(OS ERROR \d+\)$/.test(getFileExtension(item));
     return (
@@ -270,6 +303,12 @@ function Browse() {
         <Loading />
       </div>
     </div>
+  ) : filteredFiles.length === 0 ? (
+    <div className='nav:min-h-screen flex flex-col align-middle justify-center'>
+      <div className='text-center mt-8 text-3xl font-bold my-8'>
+        No elements were found!
+      </div>
+    </div>
   ) : (
     <List
       height={listHeight.value}
@@ -280,6 +319,6 @@ function Browse() {
       {ItemRenderer}
     </List>
   );
-}
+};
 
 export default Browse;

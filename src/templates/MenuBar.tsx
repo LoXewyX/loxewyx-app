@@ -1,6 +1,5 @@
 import { getCurrent } from '@tauri-apps/api/window';
-import { useEffect } from 'preact/hooks';
-import { signal } from '@preact/signals';
+import { signal, useSignalEffect } from '@preact/signals';
 import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
 import {
   isMenuToggled,
@@ -14,7 +13,7 @@ const isMaximized = signal(false);
 const windowTitle = signal('');
 
 const MenuBar = () => {
-  useEffect(() => {
+  useSignalEffect(() => {
     const updateWindowTitle = (value: string) => {
       value = `${value} - Ekilox`;
       windowTitle.value = value;
@@ -47,7 +46,7 @@ const MenuBar = () => {
       unlistenMaximize.then((f) => f());
       unlistenUnmaximize.then((f) => f());
     };
-  }, []);
+  });
 
   const toggleIsSidebarOpen = () => {
     isMenuToggled.value = !isMenuToggled.value;

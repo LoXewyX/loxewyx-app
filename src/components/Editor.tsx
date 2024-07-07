@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'preact/hooks';
-import { signal } from '@preact/signals';
+import { useRef } from 'preact/hooks';
+import { signal, useSignalEffect } from '@preact/signals';
 import { isDarkTheme } from '../signals/DarkTheme';
 import { title } from '../signals/Menu';
 import { content } from '../signals/Editor';
@@ -14,16 +14,16 @@ const EKILOX_LANGUAGE_ID = 'ekilox';
 function Editor() {
   const monacoInstance = useMonaco();
 
-  useEffect(() => {
+  useSignalEffect(() => {
     if (monacoInstance !== null) {
       isMonacoReady.value = true;
       setupMonaco(monacoInstance, EKILOX_LANGUAGE_ID);
     }
-  }, [monacoInstance]);
+  });
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
-  useEffect(() => {
+  useSignalEffect(() => {
     title.value = 'Editor';
     const editor = editorRef.current;
     if (editor) {
@@ -37,7 +37,7 @@ function Editor() {
         subscription.dispose();
       };
     }
-  }, [isMonacoReady]);
+  });
 
   const handleChange: OnChange = (value) => {
     if (value !== undefined) {

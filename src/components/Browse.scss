@@ -1,45 +1,39 @@
-#Browse {
-  @import '../globals.scss';
+#root {
+  @import "../globals.scss";
   
-  .cell {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease;
-
-    &:hover {
-      background-color: $base-black-2;
-    }
-  }
-
-  #root.dark {
+  &.dark #Browse {
     .cell:hover {
       color: $base-white-2;
       background-color: $base-black-2;
     }
   }
 
-  #root.light {
+  &.light #Browse {
     .cell:hover {
       color: $base-black-2;
       background-color: $base-white-2;
     }
   }
 
-  .cell:hover {
-    background-color: $base-black-2;
-  }
+  #Browse {
+    .cell {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s ease;
+    }
 
-  .icon {
-    width: 40px;
-    height: 40px;
-  }
+    .icon {
+      width: 40px;
+      height: 40px;
+    }
 
-  .custom-break {
-    overflow-wrap: normal;
-    word-break: break-word;
+    .custom-break {
+      overflow-wrap: normal;
+      word-break: break-word;
+    }
   }
 }

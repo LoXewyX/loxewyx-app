@@ -1,9 +1,10 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+use chrono::{DateTime, Local};
 use jwalk::WalkDir;
 use mountpoints::mountpaths;
 use serde_json::{Map, Value};
 use std::cmp::Ordering;
-use std::fs::{File, OpenOptions};
+use std::fs::{File, OpenOptions, metadata};
 use std::io::{Read, Write};
 use std::path::Path;
 use std::process::Command;
@@ -128,6 +129,24 @@ fn run_file(file_path: &str) {
     }
 }
 
+#[tauri::command]
+fn get_last_update_date() -> String {
+    let path = Path::new("tauri.conf.json");
+
+    match metadata(path) {
+        Ok(meta) => {
+            match meta.modified() {
+                Ok(modified_time) => {
+                    let datetime: DateTime<Local> = DateTime::from(modified_time);
+                    datetime.format("%m/%y").to_string()
+                }
+                Err(_) => "undefined".to_string(),
+            }
+        }
+        Err(_) => "undefined".to_string(),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -137,6 +156,7 @@ pub fn run() {
             set_config,
             get_files,
             get_mount_points,
+            get_last_update_date,
             run_file
         ])
         .run(tauri::generate_context!())
