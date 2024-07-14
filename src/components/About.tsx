@@ -21,7 +21,7 @@ function About() {
     const handleRadiantEnd = () => {
       isPingActive.value = true;
       const sound = new Howl({
-        src: ['/ekilox.mp3'],
+        src: ['/snd/ekilox.mp3'],
       });
       sound.play();
       sound.once('end', () => {
@@ -53,8 +53,8 @@ function About() {
         tauriVersion.value = tauriVer;
         appName.value = appNm;
         updatedDate.value = await invoke('get_last_update_date', {});
-      } catch (error) {
-        console.error('Error fetching app and Tauri versions:', error);
+      } catch (e) {
+        console.error('Error fetching app and Tauri versions:', e);
       }
     };
     fetchData();

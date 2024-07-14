@@ -1,0 +1,82 @@
+#Piano {
+  @import '../globals.scss';
+
+  .key {
+    position: relative;
+    cursor: pointer;
+    width: 40px;
+    height: 200px;
+    border: 1px solid $base-black-1;
+    box-sizing: border-box;
+
+    &.white {
+      background: $base-white-1;
+      z-index: 1;
+      box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.5);
+      &:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          transparent 66%,
+          rgba(0, 0, 0, 0.1) 75%
+        );
+      }
+    }
+
+    &.black {
+      background: $base-black-1;
+      width: 30px;
+      height: 120px;
+      margin-left: -15px;
+      margin-right: -15px;
+      z-index: 2;
+      box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.7);
+      &:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          transparent 75%,
+          rgba(0, 0, 0, 0.2) 75%
+        );
+      }
+    }
+
+    .note-label {
+      position: absolute;
+      bottom: 5px;
+      width: 100%;
+      text-align: center;
+      color: $base-black-1;
+    }
+
+    &.white .note-label {
+      font-size: small;
+      color: $base-black-1;
+    }
+
+    &.black .note-label {
+      font-size: x-small;
+      color: $base-white-1;
+    }
+
+    &.active {
+      background: #cfaaaa;
+    }
+  }
+
+  .piano-container {
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+  }
+}

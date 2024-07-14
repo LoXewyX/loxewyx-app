@@ -1,15 +1,17 @@
 import { invoke } from '@tauri-apps/api/core';
+import { route as redirect } from 'preact-router';
 import { useCallback, useMemo } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
 import { title, leftChildElement, rightChildElement } from '../signals/Menu';
+import { content } from '../signals/Editor';
 import { Howl } from 'howler';
 import {
   ArrowUp,
   Folder,
-  File,
   AlertCircle,
   RefreshCw,
   Search,
+  Compass,
 } from 'react-feather';
 import { FixedSizeList as List, RendererProps } from 'react-window';
 import Loading from '../templates/Loading';
@@ -41,7 +43,7 @@ const LeftMenuElement: preact.FunctionComponent<LeftMenuElementProps> = ({
   }, [canGoBack.value, goBack]);
 
   return (
-    <div className='flex items-center'>
+    <div className='flex'>
       <RefreshCw
         className='bg-transparent border-none cursor-pointer ml-2'
         onClick={onRefresh}
@@ -78,12 +80,15 @@ const RightMenuElement: preact.FunctionComponent = () => {
     searchInput.value = inputValue.value;
   }, [inputValue.value]);
 
-  const handleEnter = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Enter') handleSearch();
-  }, [handleSearch]);
+  const handleEnter = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Enter') handleSearch();
+    },
+    [handleSearch]
+  );
 
   return (
-    <div className='flex items-center relative'>
+    <div className='flex relative'>
       <input
         type='text'
         placeholder='Search...'
@@ -121,8 +126,8 @@ const Browse: preact.FunctionComponent = () => {
         rightChildElement.value = <RightMenuElement />;
 
         await fetchRouteContent();
-      } catch (error) {
-        console.error('Error initializing Browse:', error);
+      } catch (e) {
+        console.error('Error initializing Browse:', e);
       }
     };
 
@@ -144,8 +149,8 @@ const Browse: preact.FunctionComponent = () => {
       const fetchedDrives: string[] = await invoke('get_mount_points', {});
       drives.value = fetchedDrives;
       if (currentDrive.value === '') currentDrive.value = fetchedDrives[0];
-    } catch (error) {
-      console.error('Error fetching mount points:', error);
+    } catch (e) {
+      console.error('Error fetching mount points:', e);
     }
   }, []);
 
@@ -155,8 +160,8 @@ const Browse: preact.FunctionComponent = () => {
       try {
         const fetchedFiles: string[] = await invoke('get_files', { dirPath });
         files.value = fetchedFiles;
-      } catch (error) {
-        console.error('Error fetching file:', error);
+      } catch (e) {
+        console.error('Error fetching file:', e);
       } finally {
         isLoading.value = false;
       }
@@ -167,11 +172,12 @@ const Browse: preact.FunctionComponent = () => {
   const openFile = useCallback(async (filePath: string) => {
     isLoading.value = true;
     try {
-      await invoke('run_file', { filePath });
-    } catch (error) {
-      console.error('Error opening file:', error);
+      content.value = await invoke('read_file_content', { filePath });
+    } catch (e) {
+      console.error('Error opening file:', e);
     } finally {
       isLoading.value = false;
+      redirect('/editor', true);
     }
   }, []);
 
@@ -186,7 +192,7 @@ const Browse: preact.FunctionComponent = () => {
         await fetchRouteContent(newRoute);
 
         title.value = `Browse [${limitTextLength(route.value, 20, true)}]`;
-        new Howl({ src: [`/${goBack ? 'click2' : 'click3'}.mp3`] }).play();
+        new Howl({ src: [`/snd/${goBack ? 'click2' : 'click3'}.mp3`] }).play();
       }
     },
     [fetchRouteContent, openFile]
@@ -259,7 +265,7 @@ const Browse: preact.FunctionComponent = () => {
         }
       >
         <div
-          className={`flex flex-col items-center cursor-pointer mb-2 custom-break ${
+          className={`flex flex-col w-full ml-12 cursor-pointer custom-break ${
             isErrorFile ? 'disabled' : ''
           }`}
           title={item}
@@ -270,7 +276,7 @@ const Browse: preact.FunctionComponent = () => {
               {limitTextLength(item.substring(0, item.length - 1), 46)}
             </>
           ) : (
-            <div className='flex flex-col items-center justify-center'>
+            <>
               {isErrorFile ? (
                 <>
                   <AlertCircle className='icon mb-2' />
@@ -280,14 +286,16 @@ const Browse: preact.FunctionComponent = () => {
                 </>
               ) : (
                 <>
-                  <File className='icon mb-2' />
-                  <span className='text-xs font-bold'>
-                    {getFileExtension(item)}
-                  </span>
+                  <div className='flex items-center w-full mb-2'>
+                    <Compass className='icon mr-2' />
+                    <span className='text-xs font-bold'>
+                      {getFileExtension(item)}
+                    </span>
+                  </div>
                   {limitTextLength(getFileNameWithoutExtension(item), 48)}
                 </>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -295,7 +303,7 @@ const Browse: preact.FunctionComponent = () => {
   };
 
   return isLoading.value ? (
-    <div className='nav:min-h-screen flex flex-col align-middle justify-center'>
+    <div className='nav:min-h-screen flex flex-col items-center justify-center'>
       <div className='text-center mt-8 text-3xl font-bold my-8'>
         Now loading...
       </div>
@@ -304,7 +312,7 @@ const Browse: preact.FunctionComponent = () => {
       </div>
     </div>
   ) : filteredFiles.length === 0 ? (
-    <div className='nav:min-h-screen flex flex-col align-middle justify-center'>
+    <div className='nav:min-h-screen flex flex-col items-center justify-center'>
       <div className='text-center mt-8 text-3xl font-bold my-8'>
         No elements were found!
       </div>

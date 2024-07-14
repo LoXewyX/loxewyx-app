@@ -8,7 +8,16 @@ import {
   leftChildElement,
   rightChildElement,
 } from '../signals/Menu';
-import { Moon, Sun, Folder, Edit3, Info } from 'react-feather';
+import {
+  Moon,
+  Sun,
+  Folder,
+  Edit3,
+  Info,
+  Music,
+  Home,
+  MessageCircle,
+} from 'react-feather';
 
 interface LinkProps {
   href: string;
@@ -17,8 +26,11 @@ interface LinkProps {
 }
 
 const links: LinkProps[] = [
-  { href: '/', icon: Edit3, label: 'Editor' },
+  { href: '/', icon: Home, label: 'Home' },
+  { href: '/editor', icon: Edit3, label: 'Editor' },
   { href: '/browse', icon: Folder, label: 'Browse' },
+  { href: '/piano', icon: Music, label: 'Piano' },
+  { href: '/message', icon: MessageCircle, label: 'Message' },
   { href: '/about', icon: Info, label: 'About' },
 ];
 
@@ -36,7 +48,10 @@ function Sidebar() {
     if (rootElement) {
       rootElement.className = isDarkTheme.value ? 'dark' : 'light';
     }
-    await invoke('set_config', { key: 'isDark', value: isDarkTheme.value });
+    await invoke('set_config', {
+      key: 'enableDarkTheme',
+      value: isDarkTheme.value,
+    });
   };
 
   const handleNavigate = (event: MouseEvent) => {

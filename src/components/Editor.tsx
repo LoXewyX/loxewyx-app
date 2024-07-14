@@ -15,6 +15,7 @@ function Editor() {
   const monacoInstance = useMonaco();
 
   useSignalEffect(() => {
+    title.value = 'Editor';
     if (monacoInstance !== null) {
       isMonacoReady.value = true;
       setupMonaco(monacoInstance, EKILOX_LANGUAGE_ID);
@@ -24,7 +25,6 @@ function Editor() {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
   useSignalEffect(() => {
-    title.value = 'Editor';
     const editor = editorRef.current;
     if (editor) {
       const subscription = editor.onDidChangeModelContent(() => {

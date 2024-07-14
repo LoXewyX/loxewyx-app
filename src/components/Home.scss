@@ -1,0 +1,10 @@
+#Home {
+  @font-face {
+    font-family: Comic_CAT;
+    src: url('/fonts/Comic_CAT.otf') format('opentype');
+  }
+
+  .cat-font {
+    font-family: Comic_CAT;
+  }
+}

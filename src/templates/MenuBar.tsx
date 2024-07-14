@@ -1,4 +1,4 @@
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
 import {
@@ -8,16 +8,15 @@ import {
   rightChildElement,
 } from '../signals/Menu';
 
-const appWindow = signal(getCurrent());
+const appWindow = signal(getCurrentWindow());
 const isMaximized = signal(false);
 const windowTitle = signal('');
 
 const MenuBar = () => {
   useSignalEffect(() => {
     const updateWindowTitle = (value: string) => {
-      value = `${value} - Ekilox`;
       windowTitle.value = value;
-      appWindow.value.setTitle(value);
+      appWindow.value.setTitle(`${value} - Ekilox`);
     };
 
     const unsubscribeTitle = title.subscribe(updateWindowTitle);

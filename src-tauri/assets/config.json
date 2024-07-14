@@ -1,3 +1,4 @@
 {
-  "isDark": true
+  "enableDarkTheme": true,
+  "pianoNotation": "solfege"
 }

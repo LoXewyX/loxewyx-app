@@ -5,30 +5,35 @@ import { isDarkTheme } from './signals/DarkTheme';
 import MenuBar from './templates/MenuBar';
 import Sidebar from './templates/Sidebar';
 import NotFound from './components/NotFound';
+import Home from './components/Home';
 import Editor from './components/Editor';
 import Browse from './components/Browse';
+import Piano from './components/Piano';
+import Message from './components/Message';
 import About from './components/About';
 import './App.scss';
 
 const routeToComponentMap: {
   [path: string]: any;
 } = {
-  '/': Editor,
+  '/': Home,
+  '/editor': Editor,
   '/browse': Browse,
+  '/piano': Piano,
+  '/message': Message,
   '/about': About,
 };
 
 const currentComponent = signal('Editor');
 
 const App: React.FC = () => {
-  // Dark theme fetch
   useSignalEffect(() => {
     const fetchTheme = async () => {
       try {
         isDarkTheme.value =
-          (await invoke('get_config', { key: 'isDark' })) ?? true;
-      } catch (error) {
-        console.error('Error fetching theme:', error);
+          (await invoke('get_config', { key: 'enableDarkTheme' })) ?? true;
+      } catch (e) {
+        console.error('Error fetching theme:', e);
         isDarkTheme.value = true;
       }
 
@@ -46,7 +51,6 @@ const App: React.FC = () => {
       return unsubscribe;
     };
 
-    // Ensure the promise is resolved and the cleanup function is set correctly
     const initialize = async () => {
       const unsubscribe = await fetchTheme();
       return unsubscribe;
@@ -54,7 +58,6 @@ const App: React.FC = () => {
 
     const unsubscribePromise = initialize();
 
-    // Clean up the subscription on unmount
     return () => {
       unsubscribePromise.then((unsubscribe) => {
         if (unsubscribe) {

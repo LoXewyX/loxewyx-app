@@ -3,11 +3,10 @@ use chrono::{DateTime, Local};
 use jwalk::WalkDir;
 use mountpoints::mountpaths;
 use serde_json::{Map, Value};
-use std::cmp::Ordering;
-use std::fs::{File, OpenOptions, metadata};
+use std::fs::{metadata, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
-use std::process::Command;
+// use std::process::Command;
 
 /* JSON Config */
 
@@ -51,46 +50,35 @@ fn set_config(key: String, value: Value) {
 
 #[tauri::command]
 fn get_files(dir_path: &str) -> Vec<String> {
-    let mut entries: Vec<(String, bool)> = Vec::new();
+    let mut entries = Vec::new();
 
-    for entry_result in WalkDir::new(dir_path).max_depth(1).into_iter() {
-        match entry_result {
-            Ok(entry) => {
-                let path = entry.path();
-                if path == Path::new(dir_path) {
-                    continue;
+    for entry in WalkDir::new(dir_path)
+        .max_depth(1)
+        .into_iter()
+        .filter_map(Result::ok)
+    {
+        let path = entry.path();
+
+        if path != Path::new(dir_path) {
+            if let Some(name_osstr) = path.file_name() {
+                let name = name_osstr.to_string_lossy();
+
+                if path.is_dir() {
+                    entries.push(format!("{}/", name));
+                } else if path.extension().map_or(false, |ext| ext == "eki") {
+                    entries.push(name.into_owned());
                 }
-
-                let is_dir = entry.file_type().is_dir();
-                let name_str = match path.file_name() {
-                    Some(name_osstr) => {
-                        let mut name_str = name_osstr.to_string_lossy().to_string();
-                        if is_dir {
-                            name_str.push('/');
-                        }
-                        (name_str, is_dir)
-                    }
-                    None => {
-                        (path.to_string_lossy().to_string(), is_dir)
-                    }
-                };
-                entries.push(name_str);
-            }
-            Err(err) => {
-                entries.push((err.to_string(), false));
             }
         }
     }
 
-    entries.sort_unstable_by(|a, b| {
-        match (a.1, b.1) {
-            (true, true) | (false, false) => a.0.cmp(&b.0),
-            (true, false) => Ordering::Less,
-            (false, true) => Ordering::Greater,
-        }
+    entries.sort_unstable_by(|a, b| match (a.ends_with('/'), b.ends_with('/')) {
+        (false, false) | (true, true) => a.cmp(b),
+        (false, true) => std::cmp::Ordering::Less,
+        (true, false) => std::cmp::Ordering::Greater,
     });
 
-    entries.into_iter().map(|(name, _)| name).collect()
+    entries
 }
 
 #[tauri::command]
@@ -108,7 +96,7 @@ fn get_mount_points() -> Vec<String> {
     mount_points
 }
 
-#[tauri::command]
+/*#[tauri::command]
 fn run_file(file_path: &str) {
     let output = if cfg!(target_os = "windows") {
         Command::new("cmd")
@@ -127,23 +115,37 @@ fn run_file(file_path: &str) {
     if !output.status.success() {
         eprintln!("Error opening file: {:?}", output);
     }
-}
+}*/
 
 #[tauri::command]
 fn get_last_update_date() -> String {
     let path = Path::new("tauri.conf.json");
 
     match metadata(path) {
-        Ok(meta) => {
-            match meta.modified() {
-                Ok(modified_time) => {
-                    let datetime: DateTime<Local> = DateTime::from(modified_time);
-                    datetime.format("%m/%y").to_string()
-                }
-                Err(_) => "undefined".to_string(),
+        Ok(meta) => match meta.modified() {
+            Ok(modified_time) => {
+                let datetime: DateTime<Local> = DateTime::from(modified_time);
+                datetime.format("%m/%y").to_string()
             }
-        }
+            Err(_) => "undefined".to_string(),
+        },
         Err(_) => "undefined".to_string(),
+    }
+}
+
+#[tauri::command]
+fn read_file_content(file_path: &str) -> String {
+    let mut file = match File::open(file_path) {
+        Ok(file) => file,
+        Err(_) => {
+            return String::new();
+        }
+    };
+
+    let mut content = String::new();
+    match file.read_to_string(&mut content) {
+        Ok(_) => content,
+        Err(_) => String::new(),
     }
 }
 
@@ -157,7 +159,8 @@ pub fn run() {
             get_files,
             get_mount_points,
             get_last_update_date,
-            run_file
+            read_file_content,
+            // run_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
