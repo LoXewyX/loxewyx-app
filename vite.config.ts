@@ -1,6 +1,6 @@
-import { defineConfig } from "vite";
-import preact from "@preact/preset-vite";
-import { internalIpV4 } from "internal-ip";
+import { defineConfig } from 'vite';
+import preact from '@preact/preset-vite';
+import { internalIpV4 } from 'internal-ip';
 
 // @ts-expect-error process is a nodejs global
 const mobile = !!/android|ios/.exec(process.env.TAURI_ENV_PLATFORM);
@@ -17,17 +17,17 @@ export default defineConfig(async () => ({
   server: {
     port: 1420,
     strictPort: true,
-    host: mobile ? "0.0.0.0" : false,
+    host: mobile ? '0.0.0.0' : false,
     hmr: mobile
       ? {
-          protocol: "ws",
+          protocol: 'ws',
           host: await internalIpV4(),
           port: 1421,
         }
       : undefined,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      ignored: ['**/src-tauri/**'],
     },
   },
 }));

@@ -6,7 +6,7 @@ use serde_json::{Map, Value};
 use std::fs::{metadata, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
-// use std::process::Command;
+
 
 /* JSON Config */
 
@@ -149,8 +149,26 @@ fn read_file_content(file_path: &str) -> String {
     }
 }
 
+mod db;
+use db::{connect_to_db, ensure_collections_exist};
+use tokio;
+
+#[tokio::main]
+async fn db_integrity() {
+    let db = connect_to_db().await.unwrap_or_else(|err| {
+        panic!("Failed to connect to MongoDB: {}", err);
+    });
+    println!("Connected to MongoDB Atlas!");
+
+    ensure_collections_exist(&db).await.unwrap_or_else(|err| {
+        panic!("Failed to ensure collections exist: {}", err);
+    });
+    println!("Collections are ensured to exist.");
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    db_integrity();
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
