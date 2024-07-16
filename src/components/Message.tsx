@@ -1,23 +1,112 @@
-import { useSignalEffect } from '@preact/signals';
+import { invoke } from '@tauri-apps/api/core';
+import { signal, useSignalEffect } from '@preact/signals';
 import { title } from '../signals/Menu';
-import './Home.scss';
+import './Message.scss';
 
-function Home() {
+function Message() {
   useSignalEffect(() => {
-    title.value = 'Message';
+    title.value = 'Login';
   });
 
+  const username = signal('');
+  const email = signal('');
+  const password = signal('');
+  const fullName = signal('');
+
+  const fetchData = async () => {
+    try {
+      const userData = await invoke('create_user', {
+        alias: username,
+        email,
+        password,
+        fullName,
+      });
+
+      console.log('User created:', userData);
+    } catch (e) {
+      console.error('Error creating user:', e);
+    }
+  };
+
+  const handleSubmit = async (event: Event) => {
+    event.preventDefault();
+    await fetchData();
+  };
+
   return (
-    <>
-      <h2>TODO: Ideas</h2>
-      <ul>
-        <li>Create a mongoDB database</li>
-        <li>Sign up with email, name and password</li>
-        <li>Start chatting in general room. Use websocket</li>
-        <li></li>
-      </ul>
-    </>
+    <div className='flex justify-center items-center h-full'>
+      <form onSubmit={handleSubmit}>
+        <div className='mb-4'>
+          <label htmlFor='username'>Username</label>
+          <input
+            className='shadow border rounded w-full py-2 px-3 mb-3'
+            id='username'
+            name='username'
+            type='text'
+            placeholder='Username'
+            value={username}
+            onChange={(e) =>
+              (username.value = (e.target as HTMLInputElement).value)
+            }
+            required
+          />
+        </div>
+        <div className='mb-4'>
+          <label htmlFor='email'>Email</label>
+          <input
+            className='shadow border rounded w-full py-2 px-3 mb-3'
+            id='email'
+            name='email'
+            type='email'
+            placeholder='Email'
+            value={email}
+            onChange={(e) =>
+              (email.value = (e.target as HTMLInputElement).value)
+            }
+            required
+          />
+        </div>
+        <div className='mb-4'>
+          <label htmlFor='password'>Password</label>
+          <input
+            className='shadow border rounded w-full py-2 px-3 mb-3'
+            id='password'
+            name='password'
+            type='password'
+            placeholder='Password'
+            value={password}
+            onChange={(e) =>
+              (password.value = (e.target as HTMLInputElement).value)
+            }
+            required
+          />
+        </div>
+        <div className='mb-6'>
+          <label htmlFor='fullName'>Full Name</label>
+          <input
+            className='shadow border rounded w-full py-2 px-3 mb-3'
+            id='fullName'
+            name='fullName'
+            type='text'
+            placeholder='Full Name'
+            value={fullName}
+            onChange={(e) =>
+              (fullName.value = (e.target as HTMLInputElement).value)
+            }
+            required
+          />
+        </div>
+        <div className='flex justify-center'>
+          <button
+            className='shadow border font-bold py-2 px-4 rounded'
+            type='submit'
+          >
+            Create User
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
-export default Home;
+export default Message;

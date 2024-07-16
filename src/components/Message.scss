@@ -1,0 +1,39 @@
+#root {
+    @import '../globals.scss';
+
+    &.dark #Message  {
+        label {
+            color: $base-white-2;
+        }
+    
+        input {
+            color: $base-white-1;
+            background-color: $base-black-2;
+            border-color: $base-black-2;
+        }
+
+        button {
+            color: $base-white-3;
+            background-color: $base-black-3;
+            border-color: $base-black-3;
+        }
+    }
+
+    &.light #Message {
+        label {
+            color: $base-black-2;
+        }
+    
+        input {
+            color: $base-black-1;
+            background-color: $base-white-3;
+            border-color: $base-white-3;
+        }
+
+        button {
+            color: $base-black-3;
+            background-color: $base-white-3;
+            border-color: $base-white-3;
+        }
+    }
+}
