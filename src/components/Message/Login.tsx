@@ -1,25 +1,26 @@
 import { invoke } from '@tauri-apps/api/core';
 import { signal, useSignalEffect } from '@preact/signals';
-import { title } from '../signals/Menu';
+import { title, leftNavbarElement } from '../../signals/Menu';
 import './Message.scss';
 
-function Message() {
+const username = signal('');
+const password = signal('');
+
+const LeftMenuElement: preact.FunctionComponent = () => {
+  return <div className='flex'></div>;
+};
+
+function MessageLogin() {
   useSignalEffect(() => {
     title.value = 'Login';
+    leftNavbarElement.value = <LeftMenuElement />;
   });
-
-  const username = signal('');
-  const email = signal('');
-  const password = signal('');
-  const fullName = signal('');
 
   const fetchData = async () => {
     try {
       const userData = await invoke('create_user', {
         alias: username,
-        email,
         password,
-        fullName,
       });
 
       console.log('User created:', userData);
@@ -52,21 +53,6 @@ function Message() {
           />
         </div>
         <div className='mb-4'>
-          <label htmlFor='email'>Email</label>
-          <input
-            className='shadow border rounded w-full py-2 px-3 mb-3'
-            id='email'
-            name='email'
-            type='email'
-            placeholder='Email'
-            value={email}
-            onChange={(e) =>
-              (email.value = (e.target as HTMLInputElement).value)
-            }
-            required
-          />
-        </div>
-        <div className='mb-4'>
           <label htmlFor='password'>Password</label>
           <input
             className='shadow border rounded w-full py-2 px-3 mb-3'
@@ -81,27 +67,12 @@ function Message() {
             required
           />
         </div>
-        <div className='mb-6'>
-          <label htmlFor='fullName'>Full Name</label>
-          <input
-            className='shadow border rounded w-full py-2 px-3 mb-3'
-            id='fullName'
-            name='fullName'
-            type='text'
-            placeholder='Full Name'
-            value={fullName}
-            onChange={(e) =>
-              (fullName.value = (e.target as HTMLInputElement).value)
-            }
-            required
-          />
-        </div>
         <div className='flex justify-center'>
           <button
             className='shadow border font-bold py-2 px-4 rounded'
             type='submit'
           >
-            Create User
+            Login
           </button>
         </div>
       </form>
@@ -109,4 +80,4 @@ function Message() {
   );
 }
 
-export default Message;
+export default MessageLogin;

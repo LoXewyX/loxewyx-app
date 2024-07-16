@@ -2,7 +2,12 @@ import { invoke } from '@tauri-apps/api/core';
 import { route as redirect } from 'preact-router';
 import { useCallback, useMemo } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
-import { title, leftChildElement, rightChildElement } from '../signals/Menu';
+import {
+  title,
+  leftNavbarElement,
+  rightNavbarElement,
+  leftFooterElement,
+} from '../signals/Menu';
 import { content } from '../signals/Editor';
 import { Howl } from 'howler';
 import {
@@ -24,6 +29,16 @@ const searchInput = signal('');
 const drives = signal<string[]>([]);
 const files = signal<string[]>([]);
 const isLoading = signal(false);
+
+const truncateText = (text: string, maxLength: number = 90): string => {
+  if (text.length > maxLength) {
+    const start = text.substring(0, maxLength / 2);
+    const end = text.substring(text.length - maxLength / 2);
+    return `${start}...${end}`;
+  }
+
+  return text;
+};
 
 interface LeftMenuElementProps {
   onDriveChange: (event: Event) => void;
@@ -105,6 +120,10 @@ const RightMenuElement: preact.FunctionComponent = () => {
   );
 };
 
+const LeftFooterElement: preact.FunctionComponent = () => (
+  <>{truncateText(route.value)}</>
+);
+
 const Browse: preact.FunctionComponent = () => {
   useSignalEffect(() => {
     isLoading.value = false;
@@ -115,15 +134,16 @@ const Browse: preact.FunctionComponent = () => {
         await fetchMountPaths();
 
         route.value = currentDrive.value;
-        title.value = `Browse [${limitTextLength(route.value, 20, true)}]`;
-        leftChildElement.value = (
+        title.value = 'Browse';
+        leftNavbarElement.value = (
           <LeftMenuElement
             onDriveChange={handleDriveChange}
             onRefresh={handleRefresh}
             goBack={() => navigate(route.value, true, true)}
           />
         );
-        rightChildElement.value = <RightMenuElement />;
+        rightNavbarElement.value = <RightMenuElement />;
+        leftFooterElement.value = <LeftFooterElement />;
 
         await fetchRouteContent();
       } catch (e) {
@@ -191,7 +211,6 @@ const Browse: preact.FunctionComponent = () => {
         route.value = newRoute;
         await fetchRouteContent(newRoute);
 
-        title.value = `Browse [${limitTextLength(route.value, 20, true)}]`;
         new Howl({ src: [`/snd/${goBack ? 'click2' : 'click3'}.mp3`] }).play();
       }
     },
@@ -232,18 +251,6 @@ const Browse: preact.FunctionComponent = () => {
           .trim();
   }, []);
 
-  const limitTextLength = useCallback(
-    (text: string, maxLength: number, reverse: boolean = false): string => {
-      if (text.length > maxLength) {
-        return reverse
-          ? `...${text.substring(text.length - maxLength)}`
-          : `${text.substring(0, maxLength)}...`;
-      }
-      return text;
-    },
-    []
-  );
-
   const filteredFiles = useMemo(() => {
     return files.value.filter((file: string) =>
       file.toLowerCase().includes(searchInput.value.toLowerCase())
@@ -273,7 +280,7 @@ const Browse: preact.FunctionComponent = () => {
           {item.endsWith('/') ? (
             <>
               <Folder className='icon mb-2' />
-              {limitTextLength(item.substring(0, item.length - 1), 46)}
+              {truncateText(item.substring(0, item.length - 1))}
             </>
           ) : (
             <>
@@ -292,7 +299,7 @@ const Browse: preact.FunctionComponent = () => {
                       {getFileExtension(item)}
                     </span>
                   </div>
-                  {limitTextLength(getFileNameWithoutExtension(item), 48)}
+                  {truncateText(getFileNameWithoutExtension(item))}
                 </>
               )}
             </>
@@ -303,7 +310,7 @@ const Browse: preact.FunctionComponent = () => {
   };
 
   return isLoading.value ? (
-    <div className='nav:min-h-screen flex flex-col items-center justify-center'>
+    <div className='flex flex-col items-center justify-center'>
       <div className='text-center mt-8 text-3xl font-bold my-8'>
         Now loading...
       </div>
@@ -312,7 +319,7 @@ const Browse: preact.FunctionComponent = () => {
       </div>
     </div>
   ) : filteredFiles.length === 0 ? (
-    <div className='nav:min-h-screen flex flex-col items-center justify-center'>
+    <div className='flex flex-col items-center justify-center'>
       <div className='text-center mt-8 text-3xl font-bold my-8'>
         No elements were found!
       </div>

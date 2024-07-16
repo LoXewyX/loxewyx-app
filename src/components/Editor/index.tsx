@@ -1,12 +1,12 @@
 import { useRef } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
-import { isDarkTheme } from '../signals/DarkTheme';
-import { title } from '../signals/Menu';
-import { content } from '../signals/Editor';
-import Loading from '../templates/Loading';
+import { isDarkTheme } from '../../signals/DarkTheme';
+import { title } from '../../signals/Menu';
+import { content } from '../../signals/Editor';
+import Loading from '../../templates/Loading';
 import MonacoEditor, { OnChange, useMonaco } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
-import { setupMonaco } from './editor/monacoConfig';
+import { setupMonaco } from './monacoConfig';
 
 const isMonacoReady = signal<boolean>(false);
 const EKILOX_LANGUAGE_ID = 'ekilox';
@@ -48,7 +48,7 @@ function Editor() {
 
   if (!isMonacoReady) {
     return (
-      <div className='nav:min-h-screen flex flex-col align-middle justify-center'>
+      <div className='flex flex-col align-middle justify-center'>
         <div className='text-center mt-8 text-3xl font-bold my-8'>
           Now loading...
         </div>

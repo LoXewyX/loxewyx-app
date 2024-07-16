@@ -4,7 +4,7 @@ import { useMemo, useCallback } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Howl } from 'howler';
 import { Zap, ZapOff } from 'react-feather';
-import { title, rightChildElement, leftChildElement } from '../signals/Menu';
+import { title, leftFooterElement, rightFooterElement } from '../signals/Menu';
 import { pianoNotation } from '../signals/Piano';
 import './Piano.scss';
 
@@ -47,7 +47,7 @@ const generateNoteSequence = (
 const calculateKeyColor = (note: string): string =>
   note.includes('#') ? 'black' : 'white';
 
-const LeftMenuElement: FunctionalComponent = () => {
+const LeftFooterElement: FunctionalComponent = () => {
   const onPianoNotationChange = useCallback(async (event: Event) => {
     const newNotation = (event.target as HTMLSelectElement).value;
     try {
@@ -89,29 +89,31 @@ const LeftMenuElement: FunctionalComponent = () => {
   });
 
   return (
-    <select
-      value={pianoNotation.value}
-      onChange={onPianoNotationChange}
-      className='block appearance-none bg-black-2 outline-none h-[28px] rounded px-2 ml-2'
-    >
-      <option value='unset'>Unset</option>
-      <option value='english'>English</option>
-      <option value='solfege'>Solfege</option>
-    </select>
+    <div className=''>
+      <select
+        value={pianoNotation.value}
+        onChange={onPianoNotationChange}
+        className='appearance-none bg-black-3 outline-none rounded'
+      >
+        <option value='unset'>Unset</option>
+        <option value='english'>English</option>
+        <option value='solfege'>Solfege</option>
+      </select>
+    </div>
   );
 };
 
-const RightMenuElement: FunctionalComponent = () => {
+const RightFooterElement: FunctionalComponent = () => {
   return (
-    <div className='flex'>
+    <div className='flex items-center'>
       {!!currentDevice.value ? (
         <>
-          <Zap className='mr-2' />
+          <Zap className='mr-2' width={18} height={18} />
           {currentDevice.value}
         </>
       ) : (
         <>
-          <ZapOff className='mr-2' />
+          <ZapOff className='mr-2' width={18} height={18} />
           No MIDI found
         </>
       )}
@@ -227,8 +229,8 @@ const Piano: FunctionalComponent = () => {
         notation === 'english' || notation === 'solfege' ? notation : 'unset';
     });
 
-    leftChildElement.value = <LeftMenuElement />;
-    rightChildElement.value = <RightMenuElement />;
+    leftFooterElement.value = <LeftFooterElement />;
+    rightFooterElement.value = <RightFooterElement />;
 
     function handleMIDIMessage(event: WebMidi.MIDIMessageEvent) {
       const [command, note, velocity] = event.data;

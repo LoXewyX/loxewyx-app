@@ -5,8 +5,10 @@ import { Link } from 'preact-router';
 import { isDarkTheme } from '../signals/DarkTheme';
 import {
   isMenuToggled,
-  leftChildElement,
-  rightChildElement,
+  leftNavbarElement,
+  rightNavbarElement,
+  leftFooterElement,
+  rightFooterElement,
 } from '../signals/Menu';
 import {
   Moon,
@@ -58,8 +60,10 @@ function Sidebar() {
     const target = event.currentTarget as HTMLAnchorElement;
     if (target.href !== window.location.href) {
       isMenuToggled.value = false;
-      leftChildElement.value = null;
-      rightChildElement.value = null;
+      leftNavbarElement.value = null;
+      leftFooterElement.value = null;
+      rightNavbarElement.value = null;
+      rightFooterElement.value = null;
     }
   };
 
@@ -67,11 +71,11 @@ function Sidebar() {
     <>
       {/* Sidebar */}
       <div
-        className={`absolute left-0 bottom-0 nav:h-screen w-64 transform ${
+        className={`absolute left-0 h-full w-64 transform ${
           isMenuToggled.value ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out z-30 bg-black-1 txt-white-1`}
       >
-        <nav className='flex flex-col justify-between p-4 nav:min-h-screen mb-12'>
+        <nav className='flex flex-col justify-between p-4 h-full mb-12'>
           <div className='overflow-y-auto'>
             {links.map(({ href, icon: Icon, label }) => (
               <Link

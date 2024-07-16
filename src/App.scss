@@ -22,24 +22,16 @@ select::-ms-expand {
   width: 1em;
 }
 
-::-webkit-scrollbar-track {
-  background-color: $base-black-3;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: $base-black-2;
-}
-
 #menu-bar {
   height: $navbar-height;
 }
 
-.nav\:min-h-screen {
-  min-height: calc(100vh - $navbar-height);
-}
-
-.nav\:h-screen {
-  height: calc(100vh - $navbar-height);
+#menu-foot {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  height: $footer-height;
+  font-size: small;
 }
 
 .top-nav {
@@ -58,6 +50,12 @@ select::-ms-expand {
   .justify-responsive {
     justify-content: start;
   }
+}
+
+#root > div:nth-last-child(2) {
+  height: calc(100vh - $footer-height - $navbar-height);
+  top: calc($navbar-height);
+  overflow-y: auto;
 }
 
 #root.dark {
@@ -104,6 +102,14 @@ select::-ms-expand {
   .txt-white-3 {
     color: $base-white-2;
   }
+
+  ::-webkit-scrollbar-track {
+    background-color: $base-black-3;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: $base-black-2;
+  }
 }
 
 #root.light {
@@ -149,5 +155,13 @@ select::-ms-expand {
 
   .txt-white-3 {
     color: $base-black-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: $base-white-3;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: $base-white-2;
   }
 }

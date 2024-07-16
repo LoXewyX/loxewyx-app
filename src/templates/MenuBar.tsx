@@ -1,12 +1,13 @@
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { signal, useSignalEffect } from '@preact/signals';
-import { Maximize2, Minimize2, ChevronRight, ArrowUp } from 'react-feather';
+import { ChevronRight } from 'react-feather';
 import {
   isMenuToggled,
   title,
-  leftChildElement,
-  rightChildElement,
+  leftNavbarElement,
+  rightNavbarElement,
 } from '../signals/Menu';
+import { Minimize, Collapse, Expand, Power } from '../icons';
 
 const appWindow = signal(getCurrentWindow());
 const isMaximized = signal(false);
@@ -93,9 +94,9 @@ const MenuBar = () => {
               style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : {}}
             />
           </button>
-          {leftChildElement.value !== null && (
+          {leftNavbarElement.value !== null && (
             <>
-              {leftChildElement.value}
+              {leftNavbarElement.value}
               <div className='ml-2 inline-block w-0.5 self-stretch bg-white-2'></div>
             </>
           )}
@@ -106,31 +107,33 @@ const MenuBar = () => {
         </div>
 
         <div className='flex space-x-2'>
-          {rightChildElement.value !== null && (
+          {rightNavbarElement.value !== null && (
             <>
               <div className='mr-2 inline-block w-0.5 self-stretch bg-white-2'></div>
-              {rightChildElement.value}
+              {rightNavbarElement.value}
             </>
           )}
-          <ArrowUp
-            className='hover:txt-white-2 cursor-pointer'
-            style={{ transform: 'rotate(225deg)', color: '#1B8CB1' }}
+          <Minimize
+            style={{ color: '#1B8CB1' }}
+            className='cursor-pointer'
             onClick={handleMinimize}
           />
           {isMaximized.value ? (
-            <Minimize2
-              className='hover:txt-white-2 cursor-pointer'
+            <Collapse
+              className='cursor-pointer'
+              style={{ transform: 'rotate(45deg)' }}
               onClick={handleMaximize}
             />
           ) : (
-            <Maximize2
-              className='hover:txt-white-2 cursor-pointer'
+            <Expand
+              className='cursor-pointer'
+              style={{ transform: 'rotate(45deg)' }}
               onClick={handleMaximize}
             />
           )}
-          <ArrowUp
-            className='hover:txt-white-2 cursor-pointer'
-            style={{ transform: 'rotate(45deg)', color: '#F75353' }}
+          <Power
+            className='cursor-pointer'
+            style={{ color: '#F75353' }}
             onClick={handleClose}
           />
         </div>

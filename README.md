@@ -44,7 +44,7 @@ Nest all styles under #[component] to apply them exclusively to that component.
 
 - **title**: Controls window and menu titles.
 - **isMenuToggled**: Manages menu toggle state.
-- **leftChildElement** and **rightChildElement**: Add elements to the left and right menus respectively.
+- **left[Nabvar | Footer]Element** and **right[Nabvar | Footer]Element**: Add elements to the left and right menu or footer respectively.
 
 ### Fragment Templates
 

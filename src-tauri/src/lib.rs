@@ -29,10 +29,10 @@ async fn create_user(
     state: State<'_, AppState>,
     alias: String,
     email: String,
-    password: String,
     full_name: String,
+    password: String,
 ) -> Result<(), String> {
-    add_user(&state.db, alias, email, password, full_name)
+    add_user(&state.db, alias, email, full_name, password)
         .await
         .map_err(|e| e.to_string())
 }

@@ -128,14 +128,14 @@ pub async fn add_user(
     db: &Database,
     alias: String,
     email: String,
-    password: String,
     full_name: String,
+    password: String,
 ) -> Result<(), Error> {
     let user = User {
         alias,
         email,
-        password,
         full_name,
+        password,
         created_at: DateTime::now(),
         updated_at: DateTime::now(),
         access_token: String::new(),
@@ -156,3 +156,4 @@ pub async fn add_user(
 
     Ok(())
 }
+

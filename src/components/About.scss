@@ -1,4 +1,10 @@
 #About {
+  @import "../fonts.scss";
+
+  h1 {
+    font-family: Comic_CAT;
+  }
+
   .logo-animation-container {
     position: relative;
     display: inline-block;

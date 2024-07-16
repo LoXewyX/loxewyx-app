@@ -2,7 +2,6 @@ import { useSignalEffect } from '@preact/signals';
 import { title } from '../signals/Menu';
 import { Compass } from 'react-feather';
 import './Home.scss';
-import env from '../env';
 
 function Home() {
   useSignalEffect(() => {
@@ -10,10 +9,10 @@ function Home() {
   });
 
   return (
-    <div className='flex justify-center items-center h-full text-8xl'>
-      <Compass className='mr-4' width={128} height={128} />
-      <div className='cat-font'>Ekilox</div>
-      <div>{env('VITE_MONGO_URL')}</div>
+    <div className='flex items-center h-full text-8xl'>
+      <div className='cat-font text-center w-full'>
+        Eki<Compass className='inline text-center mx-4' width={128} height={128} />lox
+      </div>
     </div>
   );
 }

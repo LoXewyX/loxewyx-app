@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getName, getVersion, getTauriVersion } from '@tauri-apps/api/app';
 import { signal, useSignalEffect } from '@preact/signals';
-import { title } from '../signals/Menu';
+import { title, rightFooterElement } from '../signals/Menu';
 import { Howl } from 'howler';
 import { GitHub, Twitter, Coffee } from 'react-feather';
 import ekilox from '../assets/ekilox.svg';
@@ -13,9 +13,14 @@ const tauriVersion = signal('');
 const updatedDate = signal('');
 const isPingActive = signal(false);
 
+const RightFooterElement: preact.FunctionComponent = () => (
+  <>Created by LoXewyX</>
+);
+
 function About() {
   useSignalEffect(() => {
     title.value = 'About';
+    rightFooterElement.value = <RightFooterElement />;
     isPingActive.value = false;
 
     const handleRadiantEnd = () => {
@@ -69,7 +74,7 @@ function About() {
             <span className='ping-span absolute top-0 left-0 inline-flex h-full w-full rounded-full bg-white-2 opacity-75 ripple'></span>
           )}
         </div>
-        <h1 className='text-3xl font-bold txt-white-1 mb-4'>Ekilox</h1>
+        <h1 className='text-4xl font-bold txt-white-1 mb-4'>Ekilox</h1>
         <div className='flex justify-center space-x-4 my-8'>
           <a
             href='https://github.com/loxewyx'
@@ -109,9 +114,6 @@ function About() {
             <b className='text-left'>Ekilox version:</b>
             <div className='text-right'>{appVersion.value}</div>
           </div>
-        </div>
-        <div className='text-sm txt-white-2'>
-          Created by LoXewyX
         </div>
       </div>
     </div>
