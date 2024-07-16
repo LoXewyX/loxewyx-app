@@ -1,6 +1,8 @@
 import { invoke } from '@tauri-apps/api/core';
 import { signal, useSignalEffect } from '@preact/signals';
-import { title } from '../../signals/Menu';
+import { leftNavbarElement, title } from '../../signals/Menu';
+import { Link } from 'preact-router';
+import { LogIn } from 'react-feather';
 import './Message.scss';
 
 const username = signal('');
@@ -8,18 +10,27 @@ const email = signal('');
 const fullName = signal('');
 const password = signal('');
 
+const LeftMenuElement: preact.FunctionComponent = () => (
+  <div className='flex items-center'>
+    <Link href='/message/login'>
+      <LogIn className='ml-2' />
+    </Link>
+  </div>
+);
+
 function MessageSignup() {
   useSignalEffect(() => {
-    title.value = 'Login';
+    title.value = 'Sign Up';
+    leftNavbarElement.value = <LeftMenuElement />;
   });
 
   const fetchData = async () => {
     try {
       const userData = await invoke('create_user', {
-        alias: username,
-        email,
-        fullName,
-        password,
+        alias: username.value,
+        email: email.value,
+        fullName: fullName.value,
+        password: password.value,
       });
 
       console.log('User created:', userData);
@@ -44,7 +55,8 @@ function MessageSignup() {
             name='username'
             type='text'
             placeholder='Username'
-            value={username}
+            autocomplete='username'
+            value={username.value}
             onChange={(e) =>
               (username.value = (e.target as HTMLInputElement).value)
             }
@@ -59,7 +71,8 @@ function MessageSignup() {
             name='email'
             type='email'
             placeholder='Email'
-            value={email}
+            autocomplete='email'
+            value={email.value}
             onChange={(e) =>
               (email.value = (e.target as HTMLInputElement).value)
             }
@@ -74,7 +87,8 @@ function MessageSignup() {
             name='password'
             type='password'
             placeholder='Password'
-            value={password}
+            autocomplete='current-password'
+            value={password.value}
             onChange={(e) =>
               (password.value = (e.target as HTMLInputElement).value)
             }
@@ -89,7 +103,8 @@ function MessageSignup() {
             name='fullName'
             type='text'
             placeholder='Full Name'
-            value={fullName}
+            autocomplete='name'
+            value={fullName.value}
             onChange={(e) =>
               (fullName.value = (e.target as HTMLInputElement).value)
             }

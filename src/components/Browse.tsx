@@ -156,7 +156,7 @@ const Browse: preact.FunctionComponent = () => {
 
   useSignalEffect(() => {
     const handleResize = () => {
-      listHeight.value = window.innerHeight - 50;
+      listHeight.value = window.innerHeight - 75;
     };
     handleResize();
 
@@ -319,10 +319,8 @@ const Browse: preact.FunctionComponent = () => {
       </div>
     </div>
   ) : filteredFiles.length === 0 ? (
-    <div className='flex flex-col items-center justify-center'>
-      <div className='text-center mt-8 text-3xl font-bold my-8'>
-        No elements were found!
-      </div>
+    <div className='flex h-full justify-center items-center text-3xl font-bold'>
+      No elements were found!
     </div>
   ) : (
     <List

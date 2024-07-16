@@ -5,10 +5,6 @@ import { Link } from 'preact-router';
 import { isDarkTheme } from '../signals/DarkTheme';
 import {
   isMenuToggled,
-  leftNavbarElement,
-  rightNavbarElement,
-  leftFooterElement,
-  rightFooterElement,
 } from '../signals/Menu';
 import {
   Moon,
@@ -56,17 +52,6 @@ function Sidebar() {
     });
   };
 
-  const handleNavigate = (event: MouseEvent) => {
-    const target = event.currentTarget as HTMLAnchorElement;
-    if (target.href !== window.location.href) {
-      isMenuToggled.value = false;
-      leftNavbarElement.value = null;
-      leftFooterElement.value = null;
-      rightNavbarElement.value = null;
-      rightFooterElement.value = null;
-    }
-  };
-
   return (
     <>
       {/* Sidebar */}
@@ -82,7 +67,6 @@ function Sidebar() {
                 key={href}
                 href={href}
                 className='flex items-center p-2 mb-2 rounded txt-white-2 hover:bg-black-2'
-                onClick={handleNavigate}
               >
                 <Icon size={24} className='mr-2' />
                 {label}

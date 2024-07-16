@@ -1,7 +1,7 @@
 import { useSignalEffect } from '@preact/signals';
+import { route } from 'preact-router';
 import { title } from '../../signals/Menu';
 import { isAuthenticated } from '../../signals/Auth';
-import Login from './Login';
 import Chat from './Chat';
 
 function Message() {
@@ -9,7 +9,7 @@ function Message() {
     title.value = 'Message';
   });
 
-  return !isAuthenticated.value ? <Login /> : <Chat />;
+  return !isAuthenticated.value ? route('/message/login', true) : <Chat />;
 }
 
 export default Message;

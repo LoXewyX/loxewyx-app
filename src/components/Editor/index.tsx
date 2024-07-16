@@ -8,7 +8,7 @@ import MonacoEditor, { OnChange, useMonaco } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
 import { setupMonaco } from './monacoConfig';
 
-const isMonacoReady = signal<boolean>(false);
+const isMonacoReady = signal(false);
 const EKILOX_LANGUAGE_ID = 'ekilox';
 
 function Editor() {
@@ -48,7 +48,7 @@ function Editor() {
 
   if (!isMonacoReady) {
     return (
-      <div className='flex flex-col align-middle justify-center'>
+      <div className='flex flex-col items-center justify-center'>
         <div className='text-center mt-8 text-3xl font-bold my-8'>
           Now loading...
         </div>
@@ -62,7 +62,7 @@ function Editor() {
   return (
     <div>
       <MonacoEditor
-        height='calc(100vh - 50px)'
+        height='calc(100vh - 75px)'
         defaultLanguage={EKILOX_LANGUAGE_ID}
         theme={isDarkTheme.value ? 'vs-dark' : 'vs'}
         defaultValue={content.value}

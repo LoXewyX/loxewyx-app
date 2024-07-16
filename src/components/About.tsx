@@ -74,7 +74,7 @@ function About() {
             <span className='ping-span absolute top-0 left-0 inline-flex h-full w-full rounded-full bg-white-2 opacity-75 ripple'></span>
           )}
         </div>
-        <h1 className='text-4xl font-bold txt-white-1 mb-4'>Ekilox</h1>
+        <h1 className='text-4xl font-bold txt-white-1 mb-4'>ekilox</h1>
         <div className='flex justify-center space-x-4 my-8'>
           <a
             href='https://github.com/loxewyx'

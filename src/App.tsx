@@ -2,6 +2,13 @@ import { invoke } from '@tauri-apps/api/core';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Router, Route, RouterOnChangeArgs } from 'preact-router';
 import { isDarkTheme } from './signals/DarkTheme';
+import {
+  isMenuToggled,
+  leftNavbarElement,
+  rightNavbarElement,
+  leftFooterElement,
+  rightFooterElement,
+} from './signals/Menu';
 
 import Footer from './templates/Footer';
 import MenuBar from './templates/MenuBar';
@@ -9,11 +16,14 @@ import Sidebar from './templates/Sidebar';
 
 import About from './components/About';
 import Browse from './components/Browse';
-import Editor from './components/Editor';
+import Editor from './components/editor';
 import Home from './components/Home';
 import Message from './components/Message';
+import MessageLogin from './components/Message/Login';
+import MessageSignup from './components/Message/Signup';
 import NotFound from './components/NotFound';
 import Piano from './components/Piano';
+
 import './App.scss';
 
 const routeToComponentMap: {
@@ -24,6 +34,8 @@ const routeToComponentMap: {
   '/browse': Browse,
   '/piano': Piano,
   '/message': Message,
+  '/message/login': MessageLogin,
+  '/message/signup': MessageSignup,
   '/about': About,
 };
 
@@ -71,8 +83,12 @@ const App: React.FC = () => {
   });
 
   const handleRouteChange = (event: RouterOnChangeArgs) => {
-    const componentName = routeToComponentMap[event.url]?.name || 'NotFound';
-    currentComponent.value = componentName;
+    currentComponent.value = routeToComponentMap[event.url]?.name || 'NotFound';
+    isMenuToggled.value = false;
+    leftNavbarElement.value = null;
+    leftFooterElement.value = null;
+    rightNavbarElement.value = null;
+    rightFooterElement.value = null;
   };
 
   return (

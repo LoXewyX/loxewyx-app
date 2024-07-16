@@ -1,14 +1,20 @@
 import { invoke } from '@tauri-apps/api/core';
 import { signal, useSignalEffect } from '@preact/signals';
+import { Link } from 'preact-router';
 import { title, leftNavbarElement } from '../../signals/Menu';
+import { UserPlus } from 'react-feather';
 import './Message.scss';
 
 const username = signal('');
 const password = signal('');
 
-const LeftMenuElement: preact.FunctionComponent = () => {
-  return <div className='flex'></div>;
-};
+const LeftMenuElement: preact.FunctionComponent = () => (
+  <div className='flex items-center'>
+    <Link href='/message/signup'>
+      <UserPlus className='ml-2' />
+    </Link>
+  </div>
+);
 
 function MessageLogin() {
   useSignalEffect(() => {
@@ -19,8 +25,8 @@ function MessageLogin() {
   const fetchData = async () => {
     try {
       const userData = await invoke('create_user', {
-        alias: username,
-        password,
+        alias: username.value,
+        password: password.value,
       });
 
       console.log('User created:', userData);
@@ -45,10 +51,11 @@ function MessageLogin() {
             name='username'
             type='text'
             placeholder='Username'
-            value={username}
+            value={username.value}
             onChange={(e) =>
               (username.value = (e.target as HTMLInputElement).value)
             }
+            autoComplete='username'
             required
           />
         </div>
@@ -60,10 +67,11 @@ function MessageLogin() {
             name='password'
             type='password'
             placeholder='Password'
-            value={password}
+            value={password.value}
             onChange={(e) =>
               (password.value = (e.target as HTMLInputElement).value)
             }
+            autoComplete='current-password'
             required
           />
         </div>

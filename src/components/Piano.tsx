@@ -8,11 +8,11 @@ import { title, leftFooterElement, rightFooterElement } from '../signals/Menu';
 import { pianoNotation } from '../signals/Piano';
 import './Piano.scss';
 
-const activeNote = signal<string>('');
+const activeNote = signal('');
 const activeNotes = signal<Set<string>>(new Set());
+const currentDevice = signal('');
 const mouseDown = signal(false);
 const midiDevices = signal<WebMidi.MIDIInput[]>([]);
-const currentDevice = signal('');
 
 const noteNames = [
   'C',

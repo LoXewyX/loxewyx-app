@@ -1,7 +1,7 @@
 #root {
     @import '../../globals.scss';
 
-    &.dark #Message  {
+    &.dark #MessageSignup, &.dark #MessageLogin  {
         label {
             color: $base-white-2;
         }
@@ -19,7 +19,7 @@
         }
     }
 
-    &.light #Message {
+    &.light #MessageSignup, &.light #MessageLogin {
         label {
             color: $base-black-2;
         }
