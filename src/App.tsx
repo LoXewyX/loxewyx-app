@@ -16,7 +16,7 @@ import Sidebar from './templates/Sidebar';
 
 import About from './components/About';
 import Browse from './components/Browse';
-import Editor from './components/editor';
+import Editor from './components/Editor';
 import Home from './components/Home';
 import Message from './components/Message';
 import MessageLogin from './components/Message/Login';
@@ -30,12 +30,12 @@ const routeToComponentMap: {
   [path: string]: any;
 } = {
   '/': Home,
-  '/editor': Editor,
-  '/browse': Browse,
-  '/piano': Piano,
   '/message': Message,
   '/message/login': MessageLogin,
   '/message/signup': MessageSignup,
+  '/editor': Editor,
+  '/browse': Browse,
+  '/piano': Piano,
   '/about': About,
 };
 

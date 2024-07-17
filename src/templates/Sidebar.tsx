@@ -25,10 +25,10 @@ interface LinkProps {
 
 const links: LinkProps[] = [
   { href: '/', icon: Home, label: 'Home' },
+  { href: '/message', icon: MessageCircle, label: 'Message' },
   { href: '/editor', icon: Edit3, label: 'Editor' },
   { href: '/browse', icon: Folder, label: 'Browse' },
   { href: '/piano', icon: Music, label: 'Piano' },
-  { href: '/message', icon: MessageCircle, label: 'Message' },
   { href: '/about', icon: Info, label: 'About' },
 ];
 

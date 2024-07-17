@@ -113,7 +113,7 @@ function MessageSignup() {
         </div>
         <div className='flex justify-center'>
           <button
-            className='shadow border font-bold py-2 px-4 rounded'
+            className='shadow border font-bold py-2 px-4 rounded w-full'
             type='submit'
           >
             Create User

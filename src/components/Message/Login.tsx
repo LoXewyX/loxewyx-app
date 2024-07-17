@@ -24,12 +24,11 @@ function MessageLogin() {
 
   const fetchData = async () => {
     try {
-      const userData = await invoke('create_user', {
+      const isAuth = await invoke('user_auth', {
         alias: username.value,
         password: password.value,
       });
 
-      console.log('User created:', userData);
     } catch (e) {
       console.error('Error creating user:', e);
     }
@@ -77,7 +76,7 @@ function MessageLogin() {
         </div>
         <div className='flex justify-center'>
           <button
-            className='shadow border font-bold py-2 px-4 rounded'
+            className='shadow border font-bold py-2 px-4 rounded w-full'
             type='submit'
           >
             Login

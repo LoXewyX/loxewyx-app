@@ -72,73 +72,65 @@ const MenuBar = () => {
   };
 
   return (
-    <>
-      {/* This trick is for resizing screen since data-tauri-drag-region makes it not being resizable */}
-      <div className='absolute top-0 left-0 z-50 w-full h-[5px] bg-none'></div>
-      <div className='absolute top-0 left-0 z-50 w-[5px] h-[50px] bg-none'></div>
-      <div className='absolute top-0 right-0 z-50 w-[5px] h-[50px] bg-none'></div>
-
-      {/* MenuBar */}
-      <div
-        id='menu-bar'
-        className='flex items-center justify-between bg-black-3 txt-white-3 py-1 px-2 select-none z-40 fixed top-0 left-0 shadow-lg w-full'
-        data-tauri-drag-region
-      >
-        <div className='flex'>
-          <button
-            className='flex items-center space-x-1 hover:txt-white-2'
-            onClick={toggleIsSidebarOpen}
-          >
-            <ChevronRight
-              className='transform transition-transform duration-300'
-              style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : {}}
-            />
-          </button>
-          {leftNavbarElement.value !== null && (
-            <>
-              {leftNavbarElement.value}
-              <div className='ml-2 inline-block w-0.5 self-stretch bg-white-2'></div>
-            </>
-          )}
-        </div>
-
-        <div className='block' data-tauri-drag-region>
-          {windowTitle.value}
-        </div>
-
-        <div className='flex space-x-2'>
-          {rightNavbarElement.value !== null && (
-            <>
-              <div className='mr-2 inline-block w-0.5 self-stretch bg-white-2'></div>
-              {rightNavbarElement.value}
-            </>
-          )}
-          <Minimize
-            style={{ color: '#1B8CB1' }}
-            className='cursor-pointer'
-            onClick={handleMinimize}
+    <div
+      id='menu-bar'
+      className='flex items-center justify-between bg-black-3 txt-white-3 py-1 px-2 select-none z-40 fixed top-0 left-0 shadow-lg w-full'
+      data-tauri-drag-region
+    >
+      <div className='flex'>
+        <button
+          className='flex items-center space-x-1 hover:txt-white-2'
+          onClick={toggleIsSidebarOpen}
+        >
+          <ChevronRight
+            className='transform transition-transform duration-300'
+            style={isMenuToggled.value ? { transform: 'rotate(90deg)' } : {}}
           />
-          {isMaximized.value ? (
-            <Collapse
-              className='cursor-pointer'
-              style={{ transform: 'rotate(45deg)' }}
-              onClick={handleMaximize}
-            />
-          ) : (
-            <Expand
-              className='cursor-pointer'
-              style={{ transform: 'rotate(45deg)' }}
-              onClick={handleMaximize}
-            />
-          )}
-          <Power
-            className='cursor-pointer'
-            style={{ color: '#F75353' }}
-            onClick={handleClose}
-          />
-        </div>
+        </button>
+        {leftNavbarElement.value !== null && (
+          <>
+            {leftNavbarElement.value}
+            <div className='ml-2 inline-block w-0.5 self-stretch bg-white-2'></div>
+          </>
+        )}
       </div>
-    </>
+
+      <div className='block' data-tauri-drag-region>
+        {windowTitle.value}
+      </div>
+
+      <div className='flex space-x-2'>
+        {rightNavbarElement.value !== null && (
+          <>
+            <div className='mr-2 inline-block w-0.5 self-stretch bg-white-2'></div>
+            {rightNavbarElement.value}
+          </>
+        )}
+        <Minimize
+          style={{ transform: 'rotate(135deg)', color: '#1B8CB1' }}
+          className='cursor-pointer'
+          onClick={handleMinimize}
+        />
+        {isMaximized.value ? (
+          <Collapse
+            className='cursor-pointer'
+            style={{ transform: 'rotate(45deg)' }}
+            onClick={handleMaximize}
+          />
+        ) : (
+          <Expand
+            className='cursor-pointer'
+            style={{ transform: 'rotate(45deg)' }}
+            onClick={handleMaximize}
+          />
+        )}
+        <Power
+          className='cursor-pointer'
+          style={{ color: '#F75353' }}
+          onClick={handleClose}
+        />
+      </div>
+    </div>
   );
 };
 

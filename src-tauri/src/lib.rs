@@ -51,7 +51,6 @@ pub fn run() {
             db_integrity(Arc::clone(&db)).await;
 
             let app_state = AppState { db };
-            let tauri_context = tauri::generate_context!();
 
             tauri::Builder::default()
                 .manage(app_state)
@@ -67,7 +66,7 @@ pub fn run() {
                     /* db */
                     create_user,
                 ])
-                .run(tauri_context)
+                .run(tauri::generate_context!())
                 .expect("error while running tauri application");
         });
 }

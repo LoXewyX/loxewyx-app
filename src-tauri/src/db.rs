@@ -1,14 +1,38 @@
+use std::{error::Error, fmt};
 use mongodb::{
     bson::{doc, oid::ObjectId, DateTime},
-    error::Error,
+    error::Error as MongoError,
     options::ClientOptions,
     Client, Collection, Database,
 };
 use serde::{Deserialize, Serialize};
-use std::env;
+
+#[derive(Debug)]
+pub struct MyError {
+    message: String,
+}
+
+impl MyError {
+    fn new(message: &str) -> MyError {
+        MyError {
+            message: message.to_string(),
+        }
+    }
+}
+
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl Error for MyError {}
+
 
 #[derive(Debug, Serialize, Deserialize)]
 struct User {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    _id: Option<ObjectId>,
     alias: String,
     email: String,
     password: String,
@@ -26,9 +50,9 @@ struct Message {
     updated_at: DateTime,
 }
 
-pub async fn connect_to_db() -> Result<Database, Error> {
+pub async fn connect_to_db() -> Result<Database, MongoError> {
     let client_uri =
-        env::var("MONGO_URI").expect("You must set the environment variable: MONGO_URI");
+        std::env::var("MONGO_URI").expect("You must set the environment variable: MONGO_URI");
     let client_options = ClientOptions::parse(&client_uri).await?;
     let client = Client::with_options(client_options)?;
     let db = client.database("ekilox");
@@ -36,12 +60,12 @@ pub async fn connect_to_db() -> Result<Database, Error> {
     Ok(db)
 }
 
-async fn collection_exists(db: &Database, collection_name: &str) -> Result<bool, Error> {
+async fn collection_exists(db: &Database, collection_name: &str) -> Result<bool, MongoError> {
     let collections = db.list_collection_names().await?;
     Ok(collections.contains(&collection_name.to_string()))
 }
 
-pub async fn ensure_collections_exist(db: &Database) -> Result<(), Error> {
+pub async fn ensure_collections_exist(db: &Database) -> Result<(), MongoError> {
     let users_collection_name = "users";
     let messages_collection_name = "messages";
 
@@ -51,6 +75,7 @@ pub async fn ensure_collections_exist(db: &Database) -> Result<(), Error> {
 
         let users = vec![
             User {
+                _id: None,
                 alias: "john_doe".to_string(),
                 email: "john.doe@example.com".to_string(),
                 password: "securepassword".to_string(),
@@ -60,6 +85,7 @@ pub async fn ensure_collections_exist(db: &Database) -> Result<(), Error> {
                 access_token: String::new(),
             },
             User {
+                _id: None,
                 alias: "jane_smith".to_string(),
                 email: "jane.smith@example.com".to_string(),
                 password: "anotherpassword".to_string(),
@@ -130,8 +156,9 @@ pub async fn add_user(
     email: String,
     full_name: String,
     password: String,
-) -> Result<(), Error> {
+) -> Result<(), MyError> {
     let user = User {
+        _id: None,
         alias,
         email,
         full_name,
@@ -143,17 +170,14 @@ pub async fn add_user(
 
     let users_collection: Collection<User> = db.collection("users");
 
-    match users_collection.insert_one(user).await {
-        Ok(insert_result) => {
-            if let Some(id) = insert_result.inserted_id.as_object_id() {
-                println!("Inserted user ID: {:?}", id);
-            }
-        }
-        Err(e) => {
-            return Err(e);
-        }
+    let insert_result = users_collection.insert_one(&user).await.map_err(|e| {
+        MyError::new(&format!("Failed to insert user into MongoDB: {}", e))
+    })?;
+
+    if let Some(id) = insert_result.inserted_id.as_object_id() {
+        println!("Inserted user ID: {:?}", id);
+        Ok(())
+    } else {
+        Err(MyError::new("Failed to retrieve inserted ID"))
     }
-
-    Ok(())
 }
-
