@@ -46,7 +46,7 @@ const App: React.FC = () => {
     const fetchTheme = async () => {
       try {
         isDarkTheme.value =
-          (await invoke('get_config', { key: 'enableDarkTheme' })) ?? true;
+          (await invoke('get_config', { key: 'enable_dark_theme' })) ?? true;
       } catch (e) {
         console.error('Error fetching theme:', e);
         isDarkTheme.value = true;

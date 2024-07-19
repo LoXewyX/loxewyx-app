@@ -5,29 +5,6 @@ use serde_json::{Map, Value};
 use std::fs::{metadata, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
-// use std::process::Command;
-
-/* Test */
-
-// fn _run_file(file_path: &str) {
-//     let output = if cfg!(target_os = "windows") {
-//         Command::new("cmd")
-//             .args(&["/C", "start", "", file_path])
-//             .output()
-//             .expect("Failed to open file")
-//     } else if cfg!(target_os = "linux") {
-//         Command::new("xdg-open")
-//             .arg(file_path)
-//             .output()
-//             .expect("Failed to open file")
-//     } else {
-//         panic!("Unsupported operating system");
-//     };
-
-//     if !output.status.success() {
-//         eprintln!("Error opening file: {:?}", output);
-//     }
-// }
 
 /* JSON Config */
 

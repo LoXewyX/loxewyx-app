@@ -3,7 +3,7 @@ import { leftFooterElement, rightFooterElement } from '../signals/Menu';
 const Footer = () => {
   return (
     <div
-      className='flex w-full items-center justify-between bg-black-3 txt-white-3 px-2'
+      className='flex w-full justify-between bg-black-3 txt-white-3 px-2'
       id='menu-foot'
     >
       <div>

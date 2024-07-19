@@ -6,7 +6,7 @@ import {
   title,
   leftNavbarElement,
   rightNavbarElement,
-  leftFooterElement,
+  rightFooterElement,
 } from '../signals/Menu';
 import { content } from '../signals/Editor';
 import { Howl } from 'howler';
@@ -120,7 +120,7 @@ const RightMenuElement: preact.FunctionComponent = () => {
   );
 };
 
-const LeftFooterElement: preact.FunctionComponent = () => (
+const RightFooterElement: preact.FunctionComponent = () => (
   <>{truncateText(route.value)}</>
 );
 
@@ -143,7 +143,7 @@ const Browse: preact.FunctionComponent = () => {
           />
         );
         rightNavbarElement.value = <RightMenuElement />;
-        leftFooterElement.value = <LeftFooterElement />;
+        rightFooterElement.value = <RightFooterElement />;
 
         await fetchRouteContent();
       } catch (e) {
@@ -166,7 +166,7 @@ const Browse: preact.FunctionComponent = () => {
 
   const fetchMountPaths = useCallback(async () => {
     try {
-      const fetchedDrives: string[] = await invoke('get_mount_points', {});
+      const fetchedDrives: string[] = await invoke('get_mount_points');
       drives.value = fetchedDrives;
       if (currentDrive.value === '') currentDrive.value = fetchedDrives[0];
     } catch (e) {

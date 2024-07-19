@@ -57,7 +57,7 @@ function About() {
         appVersion.value = appVer;
         tauriVersion.value = tauriVer;
         appName.value = appNm;
-        updatedDate.value = await invoke('get_last_update_date', {});
+        updatedDate.value = await invoke('get_last_update_date');
       } catch (e) {
         console.error('Error fetching app and Tauri versions:', e);
       }

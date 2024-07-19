@@ -47,7 +47,7 @@ function Sidebar() {
       rootElement.className = isDarkTheme.value ? 'dark' : 'light';
     }
     await invoke('set_config', {
-      key: 'enableDarkTheme',
+      key: 'enable_dark_theme',
       value: isDarkTheme.value,
     });
   };

@@ -218,7 +218,7 @@ const Piano: FunctionalComponent = () => {
     (async (): Promise<string> => {
       try {
         return (
-          (await invoke('get_config', { key: 'pianoNotation' })) ?? 'unset'
+          (await invoke('get_config', { key: 'piano_notation' })) ?? 'unset'
         );
       } catch (e) {
         console.error('Error fetching piano notation:', e);
