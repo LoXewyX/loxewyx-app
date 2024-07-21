@@ -58,12 +58,12 @@ pub struct User {
     updated_at: DateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Message {
-    user_id: ObjectId,
-    content: String,
-    created_at: DateTime,
-    updated_at: DateTime,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Message {
+    pub(crate) user_id: ObjectId,
+    pub(crate) content: String,
+    pub(crate) created_at: DateTime,
+    pub(crate) updated_at: DateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -123,7 +123,6 @@ async fn ensure_collections_exist_and_mock(db: &Database) -> Result<(), MongoErr
         db.create_collection(users_collection_name)
             .await
             .map_err(|e| MongoError::from(e))?;
-        println!("Created collection: {}", users_collection_name);
 
         let john_hashed_password = hash(
             format!("{}{}{}", "john_doe", "P4ssw0rd!", *SHA_SALT),
@@ -306,7 +305,7 @@ pub async fn create_user(
             "Password must contain at least one digit",
         ));
     }
-    if !Regex::new("[!@#$%^&*(),.?\"':{}|<>-\\/_+-]|`=")
+    if !Regex::new("[!@#$%^&*(),.?\"':{}|<>-\\\\\\/_+-]|`=")
         .unwrap()
         .is_match(&password)
     {
@@ -381,7 +380,7 @@ pub async fn authenticate_user(
                 "identifier".to_string(),
                 Value::String(user._id.expect("User ID should be present").to_string()),
             );
-            set_config("access_token".to_string(), Value::String(auth.code.clone()));
+            set_config("access_token".to_string(), Value::String(auth.code));
             Ok(user)
         } else {
             Err(ApiError::new(404, "Username, email, or password not found"))
@@ -393,7 +392,10 @@ pub async fn authenticate_user(
 
 #[tauri::command]
 pub async fn verify_user_by_code(state: State<'_, super::AppState>) -> Result<User, ApiError> {
-    let db = &state.db;
+    verify_user_by_code_db(&state.db).await
+}
+
+async fn verify_user_by_code_db(db: &Database) -> Result<User, ApiError> {
     let auth_collection: Collection<Auth> = db.collection("auths");
     let users_collection: Collection<User> = db.collection("users");
 
@@ -436,4 +438,101 @@ pub async fn verify_user_by_code(state: State<'_, super::AppState>) -> Result<Us
     } else {
         Err(ApiError::new(404, "Invalid code or user ID"))
     }
+}
+
+#[tauri::command]
+pub async fn logout_user(state: State<'_, super::AppState>) -> Result<(), ApiError> {
+    match verify_user_by_code(state).await {
+        Ok(_) => {
+            set_config("identifier".to_string(), Value::String("".to_string()));
+            set_config("access_token".to_string(), Value::String("".to_string()));
+
+            Ok(())
+        }
+        Err(e) => Err(ApiError::new(401, &format!("Logout failed: {}", e))),
+    }
+}
+
+#[tauri::command]
+pub async fn get_all_messages(state: State<'_, super::AppState>) -> Result<Vec<Message>, ApiError> {
+    let db = &state.db;
+    let messages_collection: Collection<Message> = db.collection("messages");
+
+    let mut cursor = messages_collection
+        .find(doc! {})
+        .await
+        .map_err(|_| ApiError::new(500, "Error finding messages"))?;
+
+    let mut messages: Vec<Message> = Vec::new();
+    while cursor
+        .advance()
+        .await
+        .map_err(|_| ApiError::new(500, "Error advancing cursor"))?
+    {
+        let message = cursor
+            .deserialize_current()
+            .map_err(|_| ApiError::new(500, "Error deserializing message"))?;
+        messages.push(message);
+    }
+
+    Ok(messages)
+}
+
+#[tauri::command]
+pub async fn get_users_by_message_ids(
+    state: State<'_, super::AppState>,
+    message_ids: Vec<ObjectId>,
+) -> Result<HashMap<String, String>, ApiError> {
+    let db = &state.db;
+    let users_collection: Collection<User> = db.collection("users");
+
+    let filter = doc! { "_id": { "$in": message_ids } };
+
+    let mut cursor = users_collection
+        .find(filter)
+        .await
+        .map_err(|_| ApiError::new(500, "Error finding users"))?;
+
+    let mut user_map: HashMap<String, String> = HashMap::new();
+    while cursor
+        .advance()
+        .await
+        .map_err(|_| ApiError::new(500, "Error advancing cursor"))?
+    {
+        let user = cursor
+            .deserialize_current()
+            .map_err(|_| ApiError::new(500, "Error deserializing user"))?;
+        user_map.insert(user._id.unwrap().to_hex(), user.alias);
+    }
+
+    Ok(user_map)
+}
+
+pub async fn send_message(
+    db: &Database,
+    text: String,
+) -> Result<Message, ApiError> {
+    let messages_collection: Collection<Message> = db.collection("messages");
+
+    let user = verify_user_by_code_db(db).await.map_err(|e| {
+        ApiError::new(401, &format!("Authentication failed: {}", e))
+    })?;
+
+    if text.trim().is_empty() {
+        return Err(ApiError::new(400, "Message text cannot be empty"));
+    }
+
+    let message = Message {
+        user_id: user._id.expect("User ID should be present"),
+        content: text,
+        created_at: DateTime::now(),
+        updated_at: DateTime::now(),
+    };
+
+    messages_collection
+        .insert_one(&message)
+        .await
+        .map_err(|e| ApiError::new(500, &format!("Failed to insert message into MongoDB: {}", e)))?;
+
+    Ok(message)
 }

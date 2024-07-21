@@ -13,7 +13,6 @@ import {
   Edit3,
   Info,
   Music,
-  Home,
   MessageCircle,
 } from 'react-feather';
 
@@ -24,7 +23,6 @@ interface LinkProps {
 }
 
 const links: LinkProps[] = [
-  { href: '/', icon: Home, label: 'Home' },
   { href: '/message', icon: MessageCircle, label: 'Message' },
   { href: '/editor', icon: Edit3, label: 'Editor' },
   { href: '/browse', icon: Folder, label: 'Browse' },
@@ -56,7 +54,7 @@ function Sidebar() {
     <>
       {/* Sidebar */}
       <div
-        className={`absolute left-0 h-full w-64 transform ${
+        className={`absolute left-0 top-nav h-bar w-64 transform ${
           isMenuToggled.value ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out z-30 bg-black-1 txt-white-1`}
       >

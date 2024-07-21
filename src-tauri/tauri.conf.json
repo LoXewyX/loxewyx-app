@@ -1,5 +1,5 @@
 {
-  "productName": "loxewyx-app",
+  "productName": "ekilox",
   "version": "0.0.1",
   "identifier": "com.loxewyx.ekilox",
   "build": {
@@ -11,7 +11,7 @@
   "app": {
     "windows": [
       {
-        "title": "loxewyx-app",
+        "title": "ekilox",
         "width": 800,
         "height": 600,
         "minWidth": 800,
@@ -33,6 +33,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "assets"
     ]
   }
 }

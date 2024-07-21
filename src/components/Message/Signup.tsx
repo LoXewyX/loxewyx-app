@@ -41,51 +41,29 @@ const RightFooterElement: preact.FunctionComponent = () => (
   </span>
 );
 
+const handleSubmit = async (event: Event) => {
+  event.preventDefault();
+  try {
+    await invoke('create_user', {
+      alias: username.value,
+      email: email.value,
+      fullName: fullName.value,
+      password: password.value,
+    });
+    verifyUser.value = true;
+  } catch (e) {
+    const err = e as ApiError;
+    errorMsg.value = err.message;
+    console.error(`HTTP ${err.code}: ${err.message}`);
+  }
+};
+
 const FormSignup = () => {
   useSignalEffect(() => {
     title.value = 'Sign Up';
     leftNavbarElement.value = <LeftMenuElement />;
     rightFooterElement.value = <RightFooterElement />;
   });
-
-  const fetchData = async () => {
-    try {
-      const userData = await invoke('create_user', {
-        alias: username.value,
-        email: email.value,
-        fullName: fullName.value,
-        password: password.value,
-      });
-
-      console.log('User created:', userData);
-
-      // TODO: Modify interface
-      try {
-        await invoke('authenticate_user', {
-          identifier: userData.value,
-          password: userData.value,
-        }).then(() => {
-          isAuthenticated.value = true;
-          route('/message', true);
-        });
-      } catch (e) {
-        const err = e as ApiError;
-
-        errorMsg.value = err.message;
-        console.error(`HTTP ${err.code}: ${err.message}`);
-      }
-    } catch (e: unknown) {
-      const err = e as ApiError;
-
-      errorMsg.value = err.message;
-      console.error(`HTTP ${err.code}: ${err.message}`);
-    }
-  };
-
-  const handleSubmit = async (event: Event) => {
-    event.preventDefault();
-    await fetchData();
-  };
 
   return (
     <div className='flex justify-center items-center h-full p-8'>
@@ -164,7 +142,7 @@ const FormSignup = () => {
             <button
               className='absolute right-0 top-0 h-full w-8 !bg-transparent'
               onClick={() => (showPswd.value = !showPswd.value)}
-              aria-label='Invisible left button'
+              aria-label='Toggle password visibility'
               type='button'
               style={{ pointerEvents: 'auto' }}
             >
@@ -186,7 +164,28 @@ const FormSignup = () => {
 };
 
 const VerifyUser = () => {
-  return <>Hello world</>;
+  useSignalEffect(() => {
+    (async () => {
+      try {
+        await invoke('authenticate_user', {
+          identifier: username.value,
+          password: password.value,
+        });
+        isAuthenticated.value = true;
+        route('/message', true);
+      } catch (e) {
+        const err = e as ApiError;
+        errorMsg.value = err.message;
+        console.error(`HTTP ${err.code}: ${err.message}`);
+      }
+    })();
+  });
+
+  return (
+    <div className='flex justify-center items-center h-full p-8'>
+      <p>Verifying your account, please wait...</p>
+    </div>
+  );
 };
 
 function MessageSignup() {

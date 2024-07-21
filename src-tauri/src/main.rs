@@ -5,5 +5,5 @@ use dotenv::dotenv;
 
 fn main() {
     dotenv().ok();
-    loxewyx_app_lib::run();
+    ekilox_lib::run();
 }

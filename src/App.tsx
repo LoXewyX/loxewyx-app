@@ -17,7 +17,6 @@ import Sidebar from './templates/Sidebar';
 import About from './components/About';
 import Browse from './components/Browse';
 import Editor from './components/Editor';
-import Home from './components/Home';
 import Message from './components/Message';
 import MessageLogin from './components/Message/Login';
 import MessageSignup from './components/Message/Signup';
@@ -29,7 +28,7 @@ import './App.scss';
 const routeToComponentMap: {
   [path: string]: any;
 } = {
-  '/': Home,
+  '/': Message,
   '/message': Message,
   '/message/login': MessageLogin,
   '/message/signup': MessageSignup,
@@ -66,11 +65,7 @@ const App: React.FC = () => {
       return unsubscribe;
     };
 
-    const initialize = async () => {
-      const unsubscribe = await fetchTheme();
-      return unsubscribe;
-    };
-
+    const initialize = async () => await fetchTheme();
     const unsubscribePromise = initialize();
 
     return () => {

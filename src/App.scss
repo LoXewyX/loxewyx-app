@@ -22,6 +22,10 @@ select::-ms-expand {
   width: 1em;
 }
 
+.h-bar {
+  height: calc(100vh - $navbar-height);
+}
+
 #menu-bar {
   height: $navbar-height;
 }

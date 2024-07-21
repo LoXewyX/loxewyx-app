@@ -93,7 +93,7 @@ const LeftFooterElement: FunctionalComponent = () => {
       <select
         value={pianoNotation.value}
         onChange={onPianoNotationChange}
-        className='appearance-none bg-black-3 outline-none rounded'
+        className='appearance-none bg-black-3 outline-none rounded cursor-pointer'
       >
         <option value='unset'>Unset</option>
         <option value='english'>English</option>

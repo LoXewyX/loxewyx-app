@@ -72,7 +72,7 @@ const LeftMenuElement: preact.FunctionComponent<LeftMenuElementProps> = ({
       <select
         value={currentDrive.value}
         onChange={onDriveChange}
-        className='block appearance-none bg-black-2 outline-none h-[28px] rounded px-2 ml-2'
+        className='block appearance-none bg-black-2 outline-none h-[28px] rounded px-2 ml-2 cursor-pointer'
       >
         {drives.value.map((driveOption) => (
           <option key={driveOption} value={driveOption}>
@@ -310,7 +310,7 @@ const Browse: preact.FunctionComponent = () => {
   };
 
   return isLoading.value ? (
-    <div className='flex flex-col items-center justify-center'>
+    <div className='flex flex-col items-center justify-center h-full'>
       <div className='text-center mt-8 text-3xl font-bold my-8'>
         Now loading...
       </div>
