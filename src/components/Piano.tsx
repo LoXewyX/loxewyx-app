@@ -52,7 +52,7 @@ const LeftFooterElement: FunctionalComponent = () => {
     const newNotation = (event.target as HTMLSelectElement).value;
     try {
       await invoke('set_config', {
-        key: 'pianoNotation',
+        key: 'piano_notation',
         value: newNotation,
       });
 
@@ -71,7 +71,7 @@ const LeftFooterElement: FunctionalComponent = () => {
     const fetchPianoNotation = async () => {
       try {
         const notation = (await invoke('get_config', {
-          key: 'pianoNotation',
+          key: 'piano_notation',
         })) as string;
 
         pianoNotation.value =

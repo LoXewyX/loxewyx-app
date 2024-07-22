@@ -17,7 +17,6 @@ const email = signal('');
 const fullName = signal('');
 const password = signal('');
 const errorMsg = signal('');
-const verifyUser = signal(false);
 const showPswd = signal(false);
 
 const LeftMenuElement: preact.FunctionComponent = () => (
@@ -41,29 +40,50 @@ const RightFooterElement: preact.FunctionComponent = () => (
   </span>
 );
 
-const handleSubmit = async (event: Event) => {
-  event.preventDefault();
-  try {
-    await invoke('create_user', {
-      alias: username.value,
-      email: email.value,
-      fullName: fullName.value,
-      password: password.value,
-    });
-    verifyUser.value = true;
-  } catch (e) {
-    const err = e as ApiError;
-    errorMsg.value = err.message;
-    console.error(`HTTP ${err.code}: ${err.message}`);
-  }
-};
-
-const FormSignup = () => {
+const MessageSignup = () => {
   useSignalEffect(() => {
     title.value = 'Sign Up';
     leftNavbarElement.value = <LeftMenuElement />;
     rightFooterElement.value = <RightFooterElement />;
   });
+
+  const handleSubmit = async (event: Event) => {
+    event.preventDefault();
+
+    try {
+      fetch('http://localhost:4200/api/auth/signup/', {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          alias: username.value,
+          email: email.value,
+          password: password.value,
+          full_name: fullName.value,
+        }),
+      }).then(async (r) => {
+        const res = await r.json() as { userId: string; authCode: string };
+        if (r.ok) {
+          await invoke('set_config', { key: 'identifier', value: res.userId });
+          await invoke('set_config', {
+            key: 'access_token',
+            value: res.authCode,
+          });
+
+          isAuthenticated.value = true;
+          route('/message', true);
+        } else if (r.status === 500) {
+          errorMsg.value = 'Internal server error';
+        } else {
+          errorMsg.value = await r.text();
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div className='flex justify-center items-center h-full p-8'>
@@ -162,34 +182,5 @@ const FormSignup = () => {
     </div>
   );
 };
-
-const VerifyUser = () => {
-  useSignalEffect(() => {
-    (async () => {
-      try {
-        await invoke('authenticate_user', {
-          identifier: username.value,
-          password: password.value,
-        });
-        isAuthenticated.value = true;
-        route('/message', true);
-      } catch (e) {
-        const err = e as ApiError;
-        errorMsg.value = err.message;
-        console.error(`HTTP ${err.code}: ${err.message}`);
-      }
-    })();
-  });
-
-  return (
-    <div className='flex justify-center items-center h-full p-8'>
-      <p>Verifying your account, please wait...</p>
-    </div>
-  );
-};
-
-function MessageSignup() {
-  return verifyUser.value ? <VerifyUser /> : <FormSignup />;
-}
 
 export default MessageSignup;

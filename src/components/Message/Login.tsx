@@ -1,9 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Link, route } from 'preact-router';
-import { title, leftNavbarElement, rightFooterElement } from '../../signals/Menu';
+import {
+  title,
+  leftNavbarElement,
+  rightFooterElement,
+} from '../../signals/Menu';
 import { isAuthenticated } from '../../signals/Auth';
-import { ApiError } from '../../interfaces/Error';
 import { UserPlus, Eye, EyeOff, AlertTriangle } from 'react-feather';
 import loginSvg from '../../assets/login.svg';
 import './Message.scss';
@@ -41,26 +44,40 @@ function MessageLogin() {
     rightFooterElement.value = <RightFooterElement />;
   });
 
-  const fetchData = async () => {
-    try {
-      await invoke('authenticate_user', {
-        identifier: username.value,
-        password: password.value,
-      }).then(() => {
-        isAuthenticated.value = true;
-        route('/message', true);
-      });
-    } catch (e) {
-      const err = e as ApiError;
-
-      errorMsg.value = err.message;
-      console.error(`HTTP ${err.code}: ${err.message}`);
-    }
-  };
-
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
-    await fetchData();
+    try {
+      fetch('http://localhost:4200/api/auth/login/', {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identifier: username.value,
+          password: password.value,
+        }),
+      }).then(async (r) => {
+        const res = await r.json() as { userId: string; authCode: string };
+        if (r.ok) {
+          console.log(res);
+          await invoke('set_config', { key: 'identifier', value: res.userId });
+          await invoke('set_config', {
+            key: 'access_token',
+            value: res.authCode,
+          });
+
+          isAuthenticated.value = true;
+          route('/message', true);
+        } else if (r.status === 500) {
+          errorMsg.value = 'Internal server error';
+        } else {
+          errorMsg.value = await r.text();
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
