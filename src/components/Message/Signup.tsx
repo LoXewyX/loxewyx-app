@@ -8,7 +8,6 @@ import {
 import { Link, route } from 'preact-router';
 import { isAuthenticated } from '../../signals/Auth';
 import { AlertTriangle, Eye, EyeOff, LogIn } from 'react-feather';
-import { ApiError } from '../../interfaces/Error';
 import signupSvg from '../../assets/signup.svg';
 import './Message.scss';
 

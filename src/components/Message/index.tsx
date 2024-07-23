@@ -1,6 +1,6 @@
 import { useSignalEffect } from '@preact/signals';
 import { route } from 'preact-router';
-import handleAuth from '../../handlers/Auth';
+import { handleAuth } from '../../handlers/Auth';
 import Chat from './Chat';
 
 function Message() {

@@ -1,11 +1,11 @@
 interface User {
-  _id: { $oid: string };
+  id: string;
   alias: string;
   email: string;
   password: string;
   full_name: string;
-  created_at: { $date: { $numberLong: string } };
-  updated_at: { $date: { $numberLong: string } };
+  created_at: Date;
+  updated_at: Date;
 }
 
 export default User;

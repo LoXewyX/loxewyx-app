@@ -58,9 +58,8 @@ function MessageLogin() {
           password: password.value,
         }),
       }).then(async (r) => {
-        const res = await r.json() as { userId: string; authCode: string };
         if (r.ok) {
-          console.log(res);
+          const res = await r.json() as { userId: string; authCode: string };
           await invoke('set_config', { key: 'identifier', value: res.userId });
           await invoke('set_config', {
             key: 'access_token',

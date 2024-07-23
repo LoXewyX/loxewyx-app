@@ -23,6 +23,3 @@ bun.lockb
 *.njsproj
 *.sln
 *.sw?
-
-# Sensitive
-.env

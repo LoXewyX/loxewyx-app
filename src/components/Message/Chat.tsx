@@ -1,34 +1,28 @@
-import { invoke } from '@tauri-apps/api/core';
 import { useRef } from 'preact/hooks';
-import { ReactNode } from 'preact/compat';
 import { route } from 'preact-router';
 import { signal, useSignalEffect } from '@preact/signals';
 import { leftNavbarElement, title } from '../../signals/Menu';
-import { isAuthenticated } from '../../signals/Auth';
 import { isDarkTheme } from '../../signals/DarkTheme';
-import { ApiError } from '../../interfaces/Error';
-import Message from '../../interfaces/Message';
+import { logout } from '../../handlers/Auth';
 import { LogOut, Send } from 'react-feather';
 import Loading from '../../templates/Loading';
+import { ReactNode } from 'preact/compat';
+import { invoke } from '@tauri-apps/api/core';
+import User from '../../interfaces/User';
+import Message from '../../interfaces/Message';
 
-const isLoading = signal(false);
-const uid = signal('');
-const messages = signal<Message[]>([]);
 const msgToSend = signal('');
-const users = signal<Map<string, string>>(new Map());
+const isLoading = signal(false);
+const user = signal<User | null>(null);
+const messages = signal<Message[]>([]);
 
 const LeftMenuElement: preact.FunctionComponent = () => {
   const logoutHandler = async () => {
     try {
       isLoading.value = true;
-      await invoke('logout_user').then(() => {
-        isAuthenticated.value = false;
-        route('/message', true);
-        isLoading.value = false;
-      });
+      await logout().then(() => route('/message', true));
     } catch (e) {
-      const err = e as ApiError;
-      console.error(`HTTP ${err.code}: ${err.message}`);
+      console.error(e);
     }
   };
 
@@ -44,8 +38,7 @@ const ChatBubble: preact.FunctionComponent<{ message: Message }> = ({
 }) => {
   const { user_id, content, updated_at } = message;
 
-  const isCurrentUser = user_id.$oid === uid.value;
-  const userName = users.value.get(user_id.$oid) || 'Unknown User';
+  const isCurrentUser = user_id === user.value?.id;
 
   const formattedContent = content
     .split('\n')
@@ -72,7 +65,7 @@ const ChatBubble: preact.FunctionComponent<{ message: Message }> = ({
             : 'bg-black-2 text-white-2'
         }`}
       >
-        <div className='font-bold text-sm'>@{userName}</div>
+        <div className='font-bold text-sm'>User {user_id}</div>
         <div>{formattedContent}</div>
       </div>
       <div
@@ -80,7 +73,7 @@ const ChatBubble: preact.FunctionComponent<{ message: Message }> = ({
           isCurrentUser ? 'text-right' : 'text-left'
         }`}
       >
-        {new Date(parseInt(updated_at.$date.$numberLong)).toLocaleTimeString()}
+        {new Date(updated_at).toLocaleTimeString()}
       </div>
     </div>
   );
@@ -92,50 +85,89 @@ function Chat() {
   useSignalEffect(() => {
     title.value = 'Chat';
     leftNavbarElement.value = <LeftMenuElement />;
+    ws.current = new WebSocket('ws://localhost:4200/ws/room/');
 
-    (async () => {
+    ws.current.onopen = async () => {
       try {
         isLoading.value = true;
 
-        const [fetchedMessages, userId] = await Promise.all([
-          invoke('get_all_messages') as Promise<Message[]>,
-          invoke('get_config', { key: 'identifier' }) as Promise<string>,
+        const identifier = (await invoke('get_config', {
+          key: 'identifier',
+        })) as string;
+        const accessToken = (await invoke('get_config', {
+          key: 'access_token',
+        })) as string;
+
+        if (!identifier || !accessToken) {
+          route('/message', true);
+          return;
+        }
+
+        const [fetchedMessages, currUser] = await Promise.all([
+          fetch('http://localhost:4200/api/message/').then((res) => res.json()),
+          fetch('http://localhost:4200/api/auth/auth/', {
+            method: 'post',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_id: identifier,
+              auth_code: accessToken,
+            }),
+          }).then((res) => res.json()),
         ]);
 
-        messages.value = fetchedMessages;
-        uid.value = userId;
-
-        const messageIds = Array.from(
-          new Set(fetchedMessages.map((m) => m.user_id.$oid))
-        );
-        const usersMap = new Map(
-          Object.entries(
-            (await invoke('get_users_by_message_ids', {
-              messageIds,
-            })) as Record<string, string>
-          )
-        );
-
-        users.value = usersMap;
-
+        messages.value = fetchedMessages as Message[];
+        user.value = currUser as User;
         isLoading.value = false;
       } catch (e) {
-        const err = e as ApiError;
-        console.error(`HTTP ${err.code}: ${err.message}`);
-        console.error(err);
+        console.error(e);
       }
-    })();
 
-    ws.current = new WebSocket('ws://localhost:8080');
-
-    ws.current.onopen = () => {
       console.log('WebSocket connection established');
+      console.log(user.value);
+      ws.current?.send(JSON.stringify({ type: 'connected', body: user.value }));
     };
 
     ws.current.onmessage = (event) => {
+
+      interface WebSocketMessage {
+        type: 'message';
+        body: {
+          user: {
+            id: string;
+            name: string;
+          };
+          date: string;
+          text: string;
+        };
+      }
+
       console.log('WebSocket message received:', event.data);
-      const message: Message = JSON.parse(event.data);
-      messages.value = [...messages.value, message];
+      try {
+        const parsedMessage = JSON.parse(event.data) as WebSocketMessage;
+        if (
+          parsedMessage.type === 'message' &&
+          parsedMessage.body &&
+          parsedMessage.body.user &&
+          parsedMessage.body.date &&
+          parsedMessage.body.text
+        ) {
+          const message: Message = {
+            _id: '',
+            user_id: parsedMessage.body.user.id,
+            content: parsedMessage.body.text,
+            created_at: parsedMessage.body.date,
+            updated_at: parsedMessage.body.date,
+          };
+          messages.value = [...messages.value, message];
+        } else {
+          console.error('Invalid message structure:', parsedMessage);
+        }
+      } catch (e) {
+        console.error('Failed to parse WebSocket message:', e);
+      }
     };
 
     ws.current.onerror = (error) => {
@@ -156,16 +188,16 @@ function Chat() {
       try {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
           const message = JSON.stringify({
-            user_id: uid.value,
-            content: msgToSend.value,
+            type: 'send',
+            body: msgToSend.value,
+            user_id: user.value?.id,
           });
           console.log('Sending message:', message);
           ws.current.send(message);
           msgToSend.value = '';
         }
       } catch (e) {
-        const err = e as ApiError;
-        console.error(`HTTP ${err.code}: ${err.message}`);
+        console.error(e);
       }
     }
   };

@@ -1,8 +1,9 @@
 interface Message {
-  user_id: { $oid: string };
+  _id: string;
+  user_id: string;
   content: string;
-  created_at: { $date: { $numberLong: string } };
-  updated_at: { $date: { $numberLong: string } };
+  created_at: string;
+  updated_at: string;
 }
 
 export default Message;
