@@ -1,12 +1,12 @@
-import { VNode } from 'preact';
+import { JSX } from 'preact';
 import { signal } from '@preact/signals';
 
 const title = signal('Ekilox');
 const isMenuToggled = signal(false);
-const leftNavbarElement = signal<VNode | null>(null);
-const rightNavbarElement = signal<VNode | null>(null);
-const leftFooterElement = signal<VNode | null>(null);
-const rightFooterElement = signal<VNode | null>(null);
+const leftNavbarElement = signal<JSX.Element | null>(null);
+const rightNavbarElement = signal<JSX.Element | null>(null);
+const leftFooterElement = signal<JSX.Element | null>(null);
+const rightFooterElement = signal<JSX.Element | null>(null);
 
 export {
   isMenuToggled,

@@ -1,9 +1,8 @@
 interface Message {
-  _id: string;
   user_id: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
+  user_alias: string;
+  date: string;
+  text: string;
 }
 
 export default Message;

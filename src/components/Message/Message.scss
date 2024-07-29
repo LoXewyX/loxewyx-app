@@ -1,4 +1,4 @@
-@use '../../globals' as *;
+@use "../../globals" as *;
 
 #root {
   &.dark #MessageSignup,
@@ -41,13 +41,29 @@
 
   &.light #Message {
     .wallpaper {
-      background-image: url('/img/wallpaper_light.svg');
+      background-image: url("/img/wallpaper_light.svg");
+    }
+    .bubble {
+      &.user {
+        background-color: rgb(20 184 166 / 0.2);
+      }
+      &.default {
+        background-color: rgb(200 200 200 / 0.2);
+      }
     }
   }
 
   &.dark #Message {
     .wallpaper {
-      background-image: url('/img/wallpaper_dark.svg');
+      background-image: url("/img/wallpaper_dark.svg");
+    }
+    .bubble {
+      &.user {
+        background-color: rgb(20 184 166 / 0.2);
+      }
+      &.default {
+        background-color: rgb(64 64 64 / 0.2);
+      }
     }
   }
 
@@ -60,11 +76,8 @@
     }
     .bubble {
       border-radius: 16px;
-      box-shadow: 0 2px 15px rgba(63, 63, 63, 0.2);
+      box-shadow: 0 2px 15px rgb(63 63 63 / 0.2);
       backdrop-filter: blur(5px);
-      &.user {
-        background-color: rgb(20 184 166 / 0.2);
-      }
     }
   }
 }

@@ -5,6 +5,7 @@
 
 html {
   user-select: none;
+  -webkit-user-select: none;
   overflow: hidden;
 }
 
@@ -12,6 +13,11 @@ img {
   -webkit-user-drag: none;
   -webkit-user-select: none;
   user-select: none;
+}
+
+.draggable {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 select::-ms-expand {

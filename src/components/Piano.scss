@@ -12,7 +12,7 @@
     &.white {
       background: $base-white-1;
       z-index: 1;
-      box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.5);
+      box-shadow: -2px 2px 5px rgb(0 0 0 / 0.5);
       &:after {
         content: '';
         position: absolute;
@@ -23,7 +23,7 @@
         background: linear-gradient(
           135deg,
           transparent 66%,
-          rgba(0, 0, 0, 0.1) 75%
+          rgba(0 0 0 / 0.1) 75%
         );
       }
     }
@@ -35,7 +35,7 @@
       margin-left: -15px;
       margin-right: -15px;
       z-index: 2;
-      box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.7);
+      box-shadow: -2px 2px 5px rgba(0 0 0 / 0.7);
       &:after {
         content: '';
         position: absolute;
@@ -46,7 +46,7 @@
         background: linear-gradient(
           135deg,
           transparent 75%,
-          rgba(0, 0, 0, 0.2) 75%
+          rgba(0 0 0 / 0.2) 75%
         );
       }
     }

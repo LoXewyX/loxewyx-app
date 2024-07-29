@@ -1,22 +1,27 @@
+import { FunctionComponent } from 'preact';
 import { useRef } from 'preact/hooks';
 import { route } from 'preact-router';
 import { signal, useSignalEffect } from '@preact/signals';
-import { APP_API, APP_WS_API } from '../../env';
-import { leftNavbarElement } from '../../signals/Menu';
-import { logout } from '../../handlers/Auth';
+import { APP_API, APP_WS_API } from '../../../env';
+import { leftNavbarElement } from '../../../signals/Menu';
+import { logout } from '../../../handlers/Auth';
 import { LogOut, Send } from 'react-feather';
-import Loading from '../../templates/Loading';
-import { ReactNode } from 'preact/compat';
+import Loading from '../../../templates/Loading';
 import { invoke } from '@tauri-apps/api/core';
-import User from '../../interfaces/User';
-import Message from '../../interfaces/Message';
+import User from '../../../interfaces/User';
+import Message from '../../../interfaces/Message';
+import ChatBubble from './ChatBubble';
+import { filterText } from './icons';
+import EmojiMenu from './EmojiMenu';
 
 const msgToSend = signal('');
 const isLoading = signal(false);
 const user = signal<User | null>(null);
 const messages = signal<Message[]>([]);
+const emojiMenuQuery = signal('');
+const showEmojiMenu = signal(false);
 
-const LeftMenuElement: preact.FunctionComponent = () => {
+const LeftMenuElement: FunctionComponent = () => {
   const logoutHandler = async () => {
     try {
       isLoading.value = true;
@@ -33,48 +38,9 @@ const LeftMenuElement: preact.FunctionComponent = () => {
   );
 };
 
-const ChatBubble: preact.FunctionComponent<{ message: Message }> = ({
-  message,
-}) => {
-  const { user_id, content, updated_at } = message;
-
-  const isCurrentUser = user_id === user.value?.id;
-
-  const formattedContent = content
-    .split('\n')
-    .reduce<ReactNode[]>((acc, line, index, array) => {
-      acc.push(line);
-      if (index < array.length - 1) {
-        acc.push(<br key={index} />);
-      }
-      return acc;
-    }, []);
-
-  return (
-    <div
-      className={`flex flex-col ${
-        isCurrentUser ? 'items-end' : 'items-start'
-      } mb-4`}
-    >
-      <div
-        className={`flex flex-col max-w-xs px-4 py-2 rounded-lg mt-1 bubble ${
-          isCurrentUser ? 'user' : ''
-        }`}
-      >
-        <div>{formattedContent}</div>
-        <div>
-          <span className='text-xs mr-2'>{user_id}</span>
-          <span className='text-xs text-gray-500'>
-            {new Date(updated_at).toLocaleTimeString()}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 function Chat() {
   const ws = useRef<WebSocket | null>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useSignalEffect(() => {
     leftNavbarElement.value = <LeftMenuElement />;
@@ -126,10 +92,8 @@ function Chat() {
       interface WebSocketMessage {
         type: 'message';
         body: {
-          user: {
-            id: string;
-            name: string;
-          };
+          user_id: string;
+          user_alias: string;
           date: string;
           text: string;
         };
@@ -137,19 +101,12 @@ function Chat() {
 
       try {
         const parsedMessage = JSON.parse(event.data) as WebSocketMessage;
-        if (
-          parsedMessage.type === 'message' &&
-          parsedMessage.body &&
-          parsedMessage.body.user &&
-          parsedMessage.body.date &&
-          parsedMessage.body.text
-        ) {
+        if (parsedMessage.type === 'message') {
           const message: Message = {
-            _id: '',
-            user_id: parsedMessage.body.user.id,
-            content: parsedMessage.body.text,
-            created_at: parsedMessage.body.date,
-            updated_at: parsedMessage.body.date,
+            user_id: parsedMessage.body.user_id,
+            user_alias: parsedMessage.body.user_alias,
+            date: parsedMessage.body.date,
+            text: parsedMessage.body.text,
           };
           messages.value = [...messages.value, message];
         }
@@ -177,7 +134,7 @@ function Chat() {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
           const message = JSON.stringify({
             type: 'send',
-            body: msgToSend.value,
+            body: filterText(msgToSend.value),
             user_id: user.value?.id,
           });
           ws.current.send(message);
@@ -189,24 +146,66 @@ function Chat() {
     }
   };
 
+  const handleInput = (e: Event) => {
+    const textArea = e.target as HTMLTextAreaElement;
+    msgToSend.value = textArea.value;
+    const cursorPosition = textArea.selectionStart || 0;
+    const text = textArea.value.substring(0, cursorPosition);
+
+    const lastColonIndex = text.lastIndexOf(':');
+    const query = text.substring(lastColonIndex + 1).trim();
+
+    if (lastColonIndex !== -1 && (query.length > 0 || text.endsWith(':'))) {
+      showEmojiMenu.value = true;
+      emojiMenuQuery.value = query;
+    } else {
+      showEmojiMenu.value = false;
+    }
+  };
+
+  const handleSelectEmoji = (emoji: string) => {
+    const textArea = textAreaRef.current;
+    if (!textArea) return;
+
+    const cursorPosition = textArea.selectionStart || 0;
+    const textBeforeCursor = textArea.value.substring(0, cursorPosition);
+    const textAfterCursor = textArea.value.substring(cursorPosition);
+    const lastColonIndex = textBeforeCursor.lastIndexOf(':');
+    const updatedText = `${textBeforeCursor.substring(
+      0,
+      lastColonIndex
+    )}${emoji}${textAfterCursor}`;
+
+    msgToSend.value = updatedText;
+    showEmojiMenu.value = false;
+    textArea.focus();
+    textArea.selectionStart = textArea.selectionEnd =
+      lastColonIndex + emoji.length;
+  };
+
   return isLoading.value ? (
     <Loading />
   ) : (
-    <div className='flex flex-col h-full'>
+    <div className='relative flex flex-col h-full'>
       <div className='flex-1 p-4 overflow-y-auto wallpaper'>
         {messages.value.map((message, i) => (
-          <ChatBubble key={i} message={message} />
+          <ChatBubble key={i} message={message} currentUser={user.value} />
         ))}
       </div>
       <div className='p-4'>
-        <div className='flex items-end h-full'>
+        <div className='relative flex items-end h-full'>
+          {showEmojiMenu.value && (
+            <EmojiMenu
+              query={emojiMenuQuery.value}
+              onSelect={handleSelectEmoji}
+            />
+          )}
           <textarea
+            ref={textAreaRef}
             className='w-full h-24 pl-4 mr-2 py-2 rounded-lg resize-none overflow-auto bg-black-2'
             placeholder='Type a message...'
             value={msgToSend.value}
-            onInput={(e) =>
-              (msgToSend.value = (e.target as HTMLTextAreaElement).value)
-            }
+            onInput={handleInput}
           />
           <div
             className='flex items-center justify-center p-3 text-sm rounded-full bg-blue-300 cursor-pointer'
