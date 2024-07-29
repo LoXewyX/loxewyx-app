@@ -3,7 +3,6 @@ import { route as redirect } from 'preact-router';
 import { useCallback, useMemo } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
 import {
-  title,
   leftNavbarElement,
   rightNavbarElement,
   rightFooterElement,
@@ -127,14 +126,12 @@ const RightFooterElement: preact.FunctionComponent = () => (
 const Browse: preact.FunctionComponent = () => {
   useSignalEffect(() => {
     isLoading.value = false;
-    title.value = 'Browse';
 
     const initializeBrowse = async () => {
       try {
         await fetchMountPaths();
 
         route.value = currentDrive.value;
-        title.value = 'Browse';
         leftNavbarElement.value = (
           <LeftMenuElement
             onDriveChange={handleDriveChange}
@@ -310,14 +307,7 @@ const Browse: preact.FunctionComponent = () => {
   };
 
   return isLoading.value ? (
-    <div className='flex flex-col items-center justify-center h-full'>
-      <div className='text-center mt-8 text-3xl font-bold my-8'>
-        Now loading...
-      </div>
-      <div className='text-center text-xl font-bold'>
-        <Loading />
-      </div>
-    </div>
+    <Loading />
   ) : filteredFiles.length === 0 ? (
     <div className='flex h-full justify-center items-center text-3xl font-bold'>
       No elements were found!

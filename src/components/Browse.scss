@@ -1,6 +1,6 @@
+@use '../globals' as *;
+
 #root {
-  @import "../globals.scss";
-  
   &.dark #Browse {
     .cell:hover {
       color: $base-white-2;

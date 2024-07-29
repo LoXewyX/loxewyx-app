@@ -1,16 +1,13 @@
-import { invoke } from '@tauri-apps/api/core';
-import { getName, getVersion, getTauriVersion } from '@tauri-apps/api/app';
+import { getVersion, getTauriVersion } from '@tauri-apps/api/app';
 import { signal, useSignalEffect } from '@preact/signals';
-import { title, rightFooterElement } from '../signals/Menu';
+import { rightFooterElement } from '../signals/Menu';
 import { Howl } from 'howler';
 import { GitHub, Twitter, Coffee } from 'react-feather';
 import ekilox from '../assets/ekilox.svg';
 import './About.scss';
 
-const appName = signal('');
 const appVersion = signal('');
 const tauriVersion = signal('');
-const updatedDate = signal('');
 const isPingActive = signal(false);
 
 const RightFooterElement: preact.FunctionComponent = () => (
@@ -19,7 +16,6 @@ const RightFooterElement: preact.FunctionComponent = () => (
 
 function About() {
   useSignalEffect(() => {
-    title.value = 'About';
     rightFooterElement.value = <RightFooterElement />;
     isPingActive.value = false;
 
@@ -48,16 +44,13 @@ function About() {
   useSignalEffect(() => {
     const fetchData = async () => {
       try {
-        const [appVer, tauriVer, appNm] = await Promise.all([
+        const [appVer, tauriVer] = await Promise.all([
           getVersion(),
           getTauriVersion(),
-          getName(),
         ]);
 
         appVersion.value = appVer;
         tauriVersion.value = tauriVer;
-        appName.value = appNm;
-        updatedDate.value = await invoke('get_last_update_date');
       } catch (e) {
         console.error('Error fetching app and Tauri versions:', e);
       }
@@ -103,16 +96,10 @@ function About() {
         </div>
         <div className='flex flex-col md:flex-row md:space-x-8 mb-2'>
           <div className='grid grid-cols-2 gap-4 text-sm mb-4 txt-white-2'>
-            <b className='text-left'>Package name:</b>
-            <div className='text-right'>{appName.value}</div>
-            <b className='text-left'>Tauri version:</b>
-            <div className='text-right'>{tauriVersion.value}</div>
-          </div>
-          <div className='grid grid-cols-2 gap-4 text-sm mb-4 txt-white-2'>
-            <b className='text-left'>Updated date:</b>
-            <div className='text-right'>{updatedDate.value}</div>
             <b className='text-left'>Ekilox version:</b>
             <div className='text-right'>{appVersion.value}</div>
+            <b className='text-left'>Tauri version:</b>
+            <div className='text-right'>{tauriVersion.value}</div>
           </div>
         </div>
       </div>

@@ -1,39 +1,70 @@
+@use '../../globals' as *;
+
 #root {
-    @import '../../globals.scss';
-
-    &.dark #MessageSignup, &.dark #MessageLogin  {
-        label {
-            color: $base-white-2;
-        }
-    
-        input {
-            color: $base-white-1;
-            background-color: $base-black-2;
-            border-color: $base-black-2;
-        }
-
-        button {
-            color: $base-white-3;
-            background-color: $base-black-3;
-            border-color: $base-black-3;
-        }
+  &.dark #MessageSignup,
+  &.dark #MessageLogin {
+    label {
+      color: $base-white-2;
     }
 
-    &.light #MessageSignup, &.light #MessageLogin {
-        label {
-            color: $base-black-2;
-        }
-    
-        input {
-            color: $base-black-1;
-            background-color: $base-white-3;
-            border-color: $base-white-3;
-        }
-
-        button {
-            color: $base-black-3;
-            background-color: $base-white-3;
-            border-color: $base-white-3;
-        }
+    input {
+      color: $base-white-1;
+      background-color: $base-black-2;
+      border-color: $base-black-2;
     }
+
+    button {
+      color: $base-white-3;
+      background-color: $base-black-3;
+      border-color: $base-black-3;
+    }
+  }
+
+  &.light #MessageSignup,
+  &.light #MessageLogin {
+    label {
+      color: $base-black-2;
+    }
+
+    input {
+      color: $base-black-1;
+      background-color: $base-white-3;
+      border-color: $base-white-3;
+    }
+
+    button {
+      color: $base-black-3;
+      background-color: $base-white-3;
+      border-color: $base-white-3;
+    }
+  }
+
+  &.light #Message {
+    .wallpaper {
+      background-image: url('/img/wallpaper_light.svg');
+    }
+  }
+
+  &.dark #Message {
+    .wallpaper {
+      background-image: url('/img/wallpaper_dark.svg');
+    }
+  }
+
+  #Message {
+    .wallpaper {
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    .bubble {
+      border-radius: 16px;
+      box-shadow: 0 2px 15px rgba(63, 63, 63, 0.2);
+      backdrop-filter: blur(5px);
+      &.user {
+        background-color: rgb(20 184 166 / 0.2);
+      }
+    }
+  }
 }

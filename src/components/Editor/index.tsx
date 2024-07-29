@@ -1,7 +1,6 @@
 import { useRef } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
 import { isDarkTheme } from '../../signals/DarkTheme';
-import { title } from '../../signals/Menu';
 import { content } from '../../signals/Editor';
 import Loading from '../../templates/Loading';
 import MonacoEditor, { OnChange, useMonaco } from '@monaco-editor/react';
@@ -15,7 +14,6 @@ function Editor() {
   const monacoInstance = useMonaco();
 
   useSignalEffect(() => {
-    title.value = 'Editor';
     if (monacoInstance !== null) {
       isMonacoReady.value = true;
       setupMonaco(monacoInstance, EKILOX_LANGUAGE_ID);
@@ -30,32 +28,19 @@ function Editor() {
       const subscription = editor.onDidChangeModelContent(() => {
         const value = editor.getValue();
         content.value = value;
-        console.log(value);
       });
 
-      return () => {
-        subscription.dispose();
-      };
+      return () => subscription.dispose();
     }
   });
 
   const handleChange: OnChange = (value) => {
-    if (value !== undefined) {
-      content.value = value;
-      console.log(value);
-    }
+    if (value !== undefined) content.value = value;
   };
 
   if (!isMonacoReady) {
     return (
-      <div className='flex flex-col items-center justify-center'>
-        <div className='text-center mt-8 text-3xl font-bold my-8'>
-          Now loading...
-        </div>
-        <div className='text-center text-xl font-bold'>
-          <Loading />
-        </div>
-      </div>
+      <Loading />
     );
   }
 

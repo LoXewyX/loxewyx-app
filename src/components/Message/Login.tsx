@@ -2,10 +2,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Link, route } from 'preact-router';
 import {
-  title,
   leftNavbarElement,
   rightFooterElement,
 } from '../../signals/Menu';
+import { APP_API } from '../../env';
 import { isAuthenticated } from '../../signals/Auth';
 import { UserPlus, Eye, EyeOff, AlertTriangle } from 'react-feather';
 import loginSvg from '../../assets/login.svg';
@@ -39,7 +39,6 @@ const RightFooterElement: preact.FunctionComponent = () => (
 
 function MessageLogin() {
   useSignalEffect(() => {
-    title.value = 'Login';
     leftNavbarElement.value = <LeftMenuElement />;
     rightFooterElement.value = <RightFooterElement />;
   });
@@ -47,7 +46,7 @@ function MessageLogin() {
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
-      fetch('http://localhost:4200/api/auth/login/', {
+      fetch(`${APP_API}/api/auth/login/`, {
         method: 'post',
         headers: {
           Accept: 'application/json',

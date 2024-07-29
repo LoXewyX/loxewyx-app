@@ -4,7 +4,7 @@ import { useMemo, useCallback } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Howl } from 'howler';
 import { Zap, ZapOff } from 'react-feather';
-import { title, leftFooterElement, rightFooterElement } from '../signals/Menu';
+import { leftFooterElement, rightFooterElement } from '../signals/Menu';
 import { pianoNotation } from '../signals/Piano';
 import './Piano.scss';
 
@@ -213,8 +213,6 @@ const Piano: FunctionalComponent = () => {
   }, []);
 
   useSignalEffect(() => {
-    title.value = 'Piano';
-
     (async (): Promise<string> => {
       try {
         return (

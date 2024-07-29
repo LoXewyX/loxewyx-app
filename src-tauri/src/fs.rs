@@ -1,8 +1,7 @@
-use chrono::{DateTime, Local};
 use jwalk::WalkDir;
 use mountpoints::mountpaths;
 use serde_json::{Map, Value};
-use std::fs::{metadata, File, OpenOptions};
+use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
 
@@ -92,22 +91,6 @@ pub fn get_mount_points() -> Vec<String> {
     }
 
     mount_points
-}
-
-#[tauri::command]
-pub fn get_last_update_date() -> String {
-    let path = Path::new("tauri.conf.json");
-
-    match metadata(path) {
-        Ok(meta) => match meta.modified() {
-            Ok(modified_time) => {
-                let datetime: DateTime<Local> = DateTime::from(modified_time);
-                datetime.format("%m/%y").to_string()
-            }
-            Err(_) => "undefined".to_string(),
-        },
-        Err(_) => "undefined".to_string(),
-    }
 }
 
 #[tauri::command]

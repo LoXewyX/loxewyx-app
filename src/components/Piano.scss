@@ -1,6 +1,6 @@
-#Piano {
-  @import '../globals.scss';
+@use '../globals' as *;
 
+#Piano {
   .key {
     position: relative;
     cursor: pointer;

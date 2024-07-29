@@ -1,8 +1,8 @@
 import { useRef } from 'preact/hooks';
 import { route } from 'preact-router';
 import { signal, useSignalEffect } from '@preact/signals';
-import { leftNavbarElement, title } from '../../signals/Menu';
-import { isDarkTheme } from '../../signals/DarkTheme';
+import { APP_API, APP_WS_API } from '../../env';
+import { leftNavbarElement } from '../../signals/Menu';
 import { logout } from '../../handlers/Auth';
 import { LogOut, Send } from 'react-feather';
 import Loading from '../../templates/Loading';
@@ -20,7 +20,7 @@ const LeftMenuElement: preact.FunctionComponent = () => {
   const logoutHandler = async () => {
     try {
       isLoading.value = true;
-      await logout().then(() => route('/message', true));
+      await logout().then(() => route('/message/login', true));
     } catch (e) {
       console.error(e);
     }
@@ -57,23 +57,17 @@ const ChatBubble: preact.FunctionComponent<{ message: Message }> = ({
       } mb-4`}
     >
       <div
-        className={`flex flex-col max-w-xs px-4 py-2 rounded-lg mt-1 ${
-          isCurrentUser
-            ? `${
-                isDarkTheme.value ? 'bg-teal-700' : 'bg-teal-500'
-              } text-black-2`
-            : 'bg-black-2 text-white-2'
+        className={`flex flex-col max-w-xs px-4 py-2 rounded-lg mt-1 bubble ${
+          isCurrentUser ? 'user' : ''
         }`}
       >
-        <div className='font-bold text-sm'>User {user_id}</div>
         <div>{formattedContent}</div>
-      </div>
-      <div
-        className={`text-xs text-gray-500 ${
-          isCurrentUser ? 'text-right' : 'text-left'
-        }`}
-      >
-        {new Date(updated_at).toLocaleTimeString()}
+        <div>
+          <span className='text-xs mr-2'>{user_id}</span>
+          <span className='text-xs text-gray-500'>
+            {new Date(updated_at).toLocaleTimeString()}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -83,9 +77,8 @@ function Chat() {
   const ws = useRef<WebSocket | null>(null);
 
   useSignalEffect(() => {
-    title.value = 'Chat';
     leftNavbarElement.value = <LeftMenuElement />;
-    ws.current = new WebSocket('ws://localhost:4200/ws/room/');
+    ws.current = new WebSocket(`${APP_WS_API}/room/`);
 
     ws.current.onopen = async () => {
       try {
@@ -104,8 +97,8 @@ function Chat() {
         }
 
         const [fetchedMessages, currUser] = await Promise.all([
-          fetch('http://localhost:4200/api/message/').then((res) => res.json()),
-          fetch('http://localhost:4200/api/auth/auth/', {
+          fetch(`${APP_API}/api/message/`).then((res) => res.json()),
+          fetch(`${APP_API}/api/auth/auth/`, {
             method: 'post',
             headers: {
               Accept: 'application/json',
@@ -126,12 +119,10 @@ function Chat() {
       }
 
       console.log('WebSocket connection established');
-      console.log(user.value);
       ws.current?.send(JSON.stringify({ type: 'connected', body: user.value }));
     };
 
     ws.current.onmessage = (event) => {
-
       interface WebSocketMessage {
         type: 'message';
         body: {
@@ -144,7 +135,6 @@ function Chat() {
         };
       }
 
-      console.log('WebSocket message received:', event.data);
       try {
         const parsedMessage = JSON.parse(event.data) as WebSocketMessage;
         if (
@@ -162,8 +152,6 @@ function Chat() {
             updated_at: parsedMessage.body.date,
           };
           messages.value = [...messages.value, message];
-        } else {
-          console.error('Invalid message structure:', parsedMessage);
         }
       } catch (e) {
         console.error('Failed to parse WebSocket message:', e);
@@ -192,7 +180,6 @@ function Chat() {
             body: msgToSend.value,
             user_id: user.value?.id,
           });
-          console.log('Sending message:', message);
           ws.current.send(message);
           msgToSend.value = '';
         }
@@ -203,17 +190,10 @@ function Chat() {
   };
 
   return isLoading.value ? (
-    <div className='flex flex-col items-center justify-center h-full'>
-      <div className='text-center mt-8 text-3xl font-bold my-8'>
-        Now loading...
-      </div>
-      <div className='text-center text-xl font-bold'>
-        <Loading />
-      </div>
-    </div>
+    <Loading />
   ) : (
     <div className='flex flex-col h-full'>
-      <div className='flex-1 p-4 overflow-y-auto'>
+      <div className='flex-1 p-4 overflow-y-auto wallpaper'>
         {messages.value.map((message, i) => (
           <ChatBubble key={i} message={message} />
         ))}

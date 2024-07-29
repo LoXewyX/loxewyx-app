@@ -1,6 +1,6 @@
-#About {
-  @import "../fonts.scss";
+@use '../fonts' as *;
 
+#About {
   h1 {
     font-family: Comic_CAT;
   }

@@ -1,4 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
+import { FunctionalComponent } from 'preact';
+import { lazy, Suspense } from 'preact/compat';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Router, Route, RouterOnChangeArgs } from 'preact-router';
 import { isDarkTheme } from './signals/DarkTheme';
@@ -8,39 +10,73 @@ import {
   rightNavbarElement,
   leftFooterElement,
   rightFooterElement,
+  title,
 } from './signals/Menu';
+
+const Message = lazy(() => import('./components/Message'));
+const MessageLogin = lazy(() => import('./components/Message/Login'));
+const MessageSignup = lazy(() => import('./components/Message/Signup'));
+const Editor = lazy(() => import('./components/Editor'));
+const Browse = lazy(() => import('./components/Browse'));
+const Piano = lazy(() => import('./components/Piano'));
+const About = lazy(() => import('./components/About'));
+import NotFound from './components/NotFound';
 
 import Footer from './templates/Footer';
 import MenuBar from './templates/MenuBar';
 import Sidebar from './templates/Sidebar';
 
-import About from './components/About';
-import Browse from './components/Browse';
-import Editor from './components/Editor';
-import Message from './components/Message';
-import MessageLogin from './components/Message/Login';
-import MessageSignup from './components/Message/Signup';
-import NotFound from './components/NotFound';
-import Piano from './components/Piano';
-
+import Loading from './templates/Loading';
 import './App.scss';
 
 const routeToComponentMap: {
-  [path: string]: any;
+  [path: string]: { component: FunctionalComponent; id: string; title: string };
 } = {
-  '/': Message,
-  '/message': Message,
-  '/message/login': MessageLogin,
-  '/message/signup': MessageSignup,
-  '/editor': Editor,
-  '/browse': Browse,
-  '/piano': Piano,
-  '/about': About,
+  '/': {
+    component: Message,
+    id: 'Message',
+    title: 'Message',
+  },
+  '/message': {
+    component: Message,
+    id: 'Message',
+    title: 'Message',
+  },
+  '/message/login': {
+    component: MessageLogin,
+    id: 'MessageLogin',
+    title: 'Login',
+  },
+  '/message/signup': {
+    component: MessageSignup,
+    id: 'MessageSignup',
+    title: 'Sign Up',
+  },
+  '/editor': {
+    component: Editor,
+    id: 'Editor',
+    title: 'Editor',
+  },
+  '/browse': {
+    component: Browse,
+    id: 'Browse',
+    title: 'Browse',
+  },
+  '/piano': {
+    component: Piano,
+    id: 'Piano',
+    title: 'Piano',
+  },
+  '/about': {
+    component: About,
+    id: 'About',
+    title: 'About',
+  },
 };
 
 const currentComponent = signal('Editor');
 
-const App: React.FC = () => {
+const App: FunctionalComponent = () => {
   useSignalEffect(() => {
     const fetchTheme = async () => {
       try {
@@ -78,7 +114,10 @@ const App: React.FC = () => {
   });
 
   const handleRouteChange = (event: RouterOnChangeArgs) => {
-    currentComponent.value = routeToComponentMap[event.url]?.name || 'NotFound';
+    const routeComponent = routeToComponentMap[event.url];
+    currentComponent.value = routeComponent ? routeComponent.id : 'NotFound';
+
+    title.value = routeComponent ? routeComponent.title : 'Not Found';
     isMenuToggled.value = false;
     leftNavbarElement.value = null;
     leftFooterElement.value = null;
@@ -94,12 +133,14 @@ const App: React.FC = () => {
         id={currentComponent.value}
         className='absolute w-full bg-black-1 txt-white-1 overflow-y-auto'
       >
-        <Router onChange={handleRouteChange}>
-          {Object.entries(routeToComponentMap).map(([path, component]) => (
-            <Route path={path} component={component} />
-          ))}
-          <Route default component={NotFound} />
-        </Router>
+        <Suspense fallback={<Loading />}>
+          <Router onChange={handleRouteChange}>
+            {Object.entries(routeToComponentMap).map(([path, { component: Component }]) => (
+              <Route path={path} component={Component} key={path} />
+            ))}
+            <Route default component={NotFound} />
+          </Router>
+        </Suspense>
       </div>
       <Footer />
     </>

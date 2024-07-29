@@ -1,4 +1,5 @@
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getVersion } from '@tauri-apps/api/app';
 import { signal, useSignalEffect } from '@preact/signals';
 import { ChevronRight } from 'react-feather';
 import {
@@ -12,9 +13,12 @@ import { Minimize, Collapse, Expand, Power } from '../icons';
 const appWindow = signal(getCurrentWindow());
 const isMaximized = signal(false);
 const windowTitle = signal('');
+const version = signal('');
 
 const MenuBar = () => {
   useSignalEffect(() => {
+    (async () => (version.value = await getVersion()))();
+
     const updateWindowTitle = (value: string) => {
       windowTitle.value = value;
       appWindow.value.setTitle(`${value} - Ekilox`);

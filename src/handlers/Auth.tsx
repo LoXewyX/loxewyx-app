@@ -1,18 +1,16 @@
 import { invoke } from '@tauri-apps/api/core';
+import { APP_API } from '../env';
 import { isAuthenticated } from '../signals/Auth';
 
 const handleAuth = async () => {
-  console.log("authenticating");
   if (isAuthenticated.value) return true;
 
   try {
     const identifier = await invoke('get_config', { key: 'identifier' }) as string;
     const accessToken = await invoke('get_config', { key: 'access_token' }) as string;
-    console.log(`identifier: ${identifier}`);
-    console.log(`accessToken: ${accessToken}`);
     if (!identifier || !accessToken) return false;
 
-    fetch('http://localhost:4200/api/auth/auth/', {
+    fetch(`${APP_API}/api/auth/auth/`, {
       method: 'post',
       headers: {
         Accept: 'application/json',
