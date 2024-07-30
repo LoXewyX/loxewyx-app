@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import { FC } from 'preact/compat';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Link, route } from 'preact-router';
 import {
@@ -16,7 +17,7 @@ const password = signal('');
 const showPswd = signal(false);
 const errorMsg = signal('');
 
-const LeftMenuElement: preact.FunctionComponent = () => (
+const LeftMenuElement: FC = () => (
   <div className='flex items-center'>
     <Link href='/message/signup'>
       <UserPlus className='ml-2' />
@@ -24,7 +25,7 @@ const LeftMenuElement: preact.FunctionComponent = () => (
   </div>
 );
 
-const RightFooterElement: preact.FunctionComponent = () => (
+const RightFooterElement: FC = () => (
   <span className='flex items-center text-orange-500 text-nowrap'>
     {errorMsg.value ? (
       <>

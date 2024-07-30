@@ -18,7 +18,7 @@ const password = signal('');
 const errorMsg = signal('');
 const showPswd = signal(false);
 
-const LeftMenuElement: preact.FunctionComponent = () => (
+const LeftMenuElement: preact.FC = () => (
   <div className='flex items-center'>
     <Link href='/message/login'>
       <LogIn className='ml-2' />
@@ -26,7 +26,7 @@ const LeftMenuElement: preact.FunctionComponent = () => (
   </div>
 );
 
-const RightFooterElement: preact.FunctionComponent = () => (
+const RightFooterElement: preact.FC = () => (
   <span className='flex items-center text-orange-500 text-nowrap'>
     {errorMsg.value ? (
       <>

@@ -1,6 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { FunctionalComponent } from 'preact';
-import { lazy, Suspense } from 'preact/compat';
+import { FC, lazy, Suspense } from 'preact/compat';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Router, Route, RouterOnChangeArgs } from 'preact-router';
 import { isDarkTheme } from './signals/DarkTheme';
@@ -30,7 +29,7 @@ import Loading from './templates/Loading';
 import './App.scss';
 
 const routeToComponentMap: {
-  [path: string]: { component: FunctionalComponent; id: string; title: string };
+  [path: string]: { component: FC; id: string; title: string };
 } = {
   '/': {
     component: Message,
@@ -76,7 +75,7 @@ const routeToComponentMap: {
 
 const currentComponent = signal('Editor');
 
-const App: FunctionalComponent = () => {
+const App: FC = () => {
   useSignalEffect(() => {
     const fetchTheme = async () => {
       try {

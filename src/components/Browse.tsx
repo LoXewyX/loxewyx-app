@@ -1,7 +1,8 @@
 import { invoke } from '@tauri-apps/api/core';
-import { route as redirect } from 'preact-router';
+import { FC } from 'preact/compat';
 import { useCallback, useMemo } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
+import { route as redirect } from 'preact-router';
 import {
   leftNavbarElement,
   rightNavbarElement,
@@ -45,7 +46,7 @@ interface LeftMenuElementProps {
   goBack: () => void;
 }
 
-const LeftMenuElement: preact.FunctionComponent<LeftMenuElementProps> = ({
+const LeftMenuElement: FC<LeftMenuElementProps> = ({
   onDriveChange,
   onRefresh,
   goBack,
@@ -83,7 +84,7 @@ const LeftMenuElement: preact.FunctionComponent<LeftMenuElementProps> = ({
   );
 };
 
-const RightMenuElement: preact.FunctionComponent = () => {
+const RightMenuElement: FC = () => {
   const inputValue = signal(searchInput.value);
 
   const handleSearchInputChange = useCallback((event: Event) => {
@@ -119,11 +120,11 @@ const RightMenuElement: preact.FunctionComponent = () => {
   );
 };
 
-const RightFooterElement: preact.FunctionComponent = () => (
+const RightFooterElement: FC = () => (
   <>{truncateText(route.value)}</>
 );
 
-const Browse: preact.FunctionComponent = () => {
+const Browse: FC = () => {
   useSignalEffect(() => {
     isLoading.value = false;
 
@@ -254,7 +255,7 @@ const Browse: preact.FunctionComponent = () => {
     );
   }, [files.value, searchInput.value]);
 
-  const ItemRenderer: preact.FunctionComponent<RendererProps> = ({
+  const ItemRenderer: FC<RendererProps> = ({
     index,
     style,
   }) => {

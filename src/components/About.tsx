@@ -1,4 +1,5 @@
 import { getVersion, getTauriVersion } from '@tauri-apps/api/app';
+import { FC } from 'preact/compat';
 import { signal, useSignalEffect } from '@preact/signals';
 import { rightFooterElement } from '../signals/Menu';
 import { Howl } from 'howler';
@@ -10,7 +11,7 @@ const appVersion = signal('');
 const tauriVersion = signal('');
 const isPingActive = signal(false);
 
-const RightFooterElement: preact.FunctionComponent = () => (
+const RightFooterElement: FC = () => (
   <>Created by LoXewyX</>
 );
 

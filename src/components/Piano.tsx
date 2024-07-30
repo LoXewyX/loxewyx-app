@@ -1,11 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
-import { FunctionalComponent } from 'preact';
+import { FC } from 'preact/compat';
 import { useMemo, useCallback } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Howl } from 'howler';
 import { Zap, ZapOff } from 'react-feather';
-import { leftFooterElement, rightFooterElement } from '../signals/Menu';
+import { leftFooterElement, rightFooterElement, leftNavbarElement } from '../signals/Menu';
 import { pianoNotation } from '../signals/Piano';
+import Inputs from '../templates/Inputs';
 import './Piano.scss';
 
 const activeNote = signal('');
@@ -13,6 +14,7 @@ const activeNotes = signal<Set<string>>(new Set());
 const currentDevice = signal('');
 const mouseDown = signal(false);
 const midiDevices = signal<WebMidi.MIDIInput[]>([]);
+const octaveRange = signal<number[]>([4, 5]);
 
 const noteNames = [
   'C',
@@ -47,15 +49,16 @@ const generateNoteSequence = (
 const calculateKeyColor = (note: string): string =>
   note.includes('#') ? 'black' : 'white';
 
-const LeftFooterElement: FunctionalComponent = () => {
-  const onPianoNotationChange = useCallback(async (event: Event) => {
+const LeftMenuElement: FC = () => <>hello<Inputs fromRange={1} toRange={1} /></>;
+
+const LeftFooterElement: FC = () => {
+  const onPianoNotationChange = async (event: Event) => {
     const newNotation = (event.target as HTMLSelectElement).value;
     try {
       await invoke('set_config', {
         key: 'piano_notation',
         value: newNotation,
       });
-
       pianoNotation.value =
         newNotation === 'unset' ||
         newNotation === 'english' ||
@@ -65,15 +68,14 @@ const LeftFooterElement: FunctionalComponent = () => {
     } catch (e) {
       console.error('Error setting piano notation:', e);
     }
-  }, []);
+  };
 
   useSignalEffect(() => {
-    const fetchPianoNotation = async () => {
+    (async () => {
       try {
         const notation = (await invoke('get_config', {
           key: 'piano_notation',
         })) as string;
-
         pianoNotation.value =
           notation === 'unset' ||
           notation === 'english' ||
@@ -83,17 +85,15 @@ const LeftFooterElement: FunctionalComponent = () => {
       } catch (e) {
         console.error('Error fetching piano notation:', e);
       }
-    };
-
-    fetchPianoNotation();
+    })();
   });
 
   return (
-    <div className=''>
+    <div className='flex flex-row'>
       <select
         value={pianoNotation.value}
         onChange={onPianoNotationChange}
-        className='appearance-none bg-black-3 outline-none rounded cursor-pointer'
+        className='appearance-none bg-black-3 outline-none rounded cursor-pointer mr-2'
       >
         <option value='unset'>Unset</option>
         <option value='english'>English</option>
@@ -103,7 +103,7 @@ const LeftFooterElement: FunctionalComponent = () => {
   );
 };
 
-const RightFooterElement: FunctionalComponent = () => {
+const RightFooterElement: FC = () => {
   return (
     <div className='flex items-center'>
       {!!currentDevice.value ? (
@@ -131,7 +131,7 @@ interface KeyProps {
   onMouseEnter: (note: string) => void;
 }
 
-const Key: FunctionalComponent<KeyProps> = ({
+const Key: FC<KeyProps> = ({
   note,
   midiNoteNumber,
   playNote,
@@ -189,8 +189,17 @@ const Key: FunctionalComponent<KeyProps> = ({
   );
 };
 
-const Piano: FunctionalComponent = () => {
-  const octaveNotes = useMemo(() => generateNoteSequence(4, 5), []);
+const Piano: FC = () => {
+  useSignalEffect(() => {
+    leftNavbarElement.value = <LeftMenuElement />;
+    leftFooterElement.value = <LeftFooterElement />;
+    rightFooterElement.value = <RightFooterElement />;
+  });
+
+  const octaveNotes = useMemo(
+    () => generateNoteSequence(octaveRange.value[0], octaveRange.value[1]),
+    [octaveRange.value]
+  );
 
   const playNote = useCallback((midiNoteNumber: number, volume: number) => {
     new Howl({
@@ -226,9 +235,6 @@ const Piano: FunctionalComponent = () => {
       pianoNotation.value =
         notation === 'english' || notation === 'solfege' ? notation : 'unset';
     });
-
-    leftFooterElement.value = <LeftFooterElement />;
-    rightFooterElement.value = <RightFooterElement />;
 
     function handleMIDIMessage(event: WebMidi.MIDIMessageEvent) {
       const [command, note, velocity] = event.data;
@@ -377,6 +383,7 @@ const Piano: FunctionalComponent = () => {
       <div className='flex w-full justify-center'>
         {octaveNotes.map((note) => (
           <Key
+            key={note}
             note={note}
             midiNoteNumber={mapNoteToMidiNumber(note)}
             playNote={playNote}

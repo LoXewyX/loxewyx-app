@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'preact';
+import { FC } from 'preact';
 import { useRef } from 'preact/hooks';
 import { route } from 'preact-router';
 import { signal, useSignalEffect } from '@preact/signals';
@@ -21,7 +21,7 @@ const messages = signal<Message[]>([]);
 const emojiMenuQuery = signal('');
 const showEmojiMenu = signal(false);
 
-const LeftMenuElement: FunctionComponent = () => {
+const LeftMenuElement: FC = () => {
   const logoutHandler = async () => {
     try {
       isLoading.value = true;
@@ -129,12 +129,13 @@ function Chat() {
   });
 
   const sendMessage = async () => {
-    if (msgToSend.value.trim() !== '') {
+    const text = filterText(msgToSend.value);
+    if (text.trim() !== '') {
       try {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
           const message = JSON.stringify({
             type: 'send',
-            body: filterText(msgToSend.value),
+            body: text,
             user_id: user.value?.id,
           });
           ws.current.send(message);
@@ -148,7 +149,7 @@ function Chat() {
 
   const handleInput = (e: Event) => {
     const textArea = e.target as HTMLTextAreaElement;
-    msgToSend.value = textArea.value;
+    msgToSend.value = filterText(textArea.value);
     const cursorPosition = textArea.selectionStart || 0;
     const text = textArea.value.substring(0, cursorPosition);
 
