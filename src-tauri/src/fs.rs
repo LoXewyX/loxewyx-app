@@ -94,17 +94,17 @@ pub fn get_mount_points() -> Vec<String> {
 }
 
 #[tauri::command]
-pub fn read_file_content(file_path: &str) -> String {
-    let mut file = match File::open(file_path) {
-        Ok(file) => file,
-        Err(_) => {
-            return String::new();
-        }
-    };
+pub async fn load_file(path: String) -> Result<String, String> {
+    match std::fs::read_to_string(&path) {
+        Ok(content) => Ok(content),
+        Err(e) => Err(format!("Failed to read file: {}", e)),
+    }
+}
 
-    let mut content = String::new();
-    match file.read_to_string(&mut content) {
-        Ok(_) => content,
-        Err(_) => String::new(),
+#[tauri::command]
+pub async fn save_file(path: String, content: String) -> Result<(), String> {
+    match std::fs::write(&path, content) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("Failed to write file: {}", e)),
     }
 }

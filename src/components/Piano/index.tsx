@@ -4,9 +4,13 @@ import { useMemo, useCallback } from 'preact/hooks';
 import { signal, useSignalEffect } from '@preact/signals';
 import { Howl } from 'howler';
 import { Zap, ZapOff } from 'react-feather';
-import { leftFooterElement, rightFooterElement, leftNavbarElement } from '../signals/Menu';
-import { pianoNotation } from '../signals/Piano';
-import Inputs from '../templates/Inputs';
+import {
+  leftFooterElement,
+  rightFooterElement,
+  leftNavbarElement,
+} from '../../signals/Menu';
+import { pianoNotation, octaveRange } from '../../signals/Piano';
+import Range from './range';
 import './Piano.scss';
 
 const activeNote = signal('');
@@ -14,7 +18,6 @@ const activeNotes = signal<Set<string>>(new Set());
 const currentDevice = signal('');
 const mouseDown = signal(false);
 const midiDevices = signal<WebMidi.MIDIInput[]>([]);
-const octaveRange = signal<number[]>([4, 5]);
 
 const noteNames = [
   'C',
@@ -49,7 +52,7 @@ const generateNoteSequence = (
 const calculateKeyColor = (note: string): string =>
   note.includes('#') ? 'black' : 'white';
 
-const LeftMenuElement: FC = () => <>hello<Inputs fromRange={1} toRange={1} /></>;
+const LeftMenuElement: FC = () => <Range />;
 
 const LeftFooterElement: FC = () => {
   const onPianoNotationChange = async (event: Event) => {

@@ -8,7 +8,7 @@ import {
   rightNavbarElement,
   rightFooterElement,
 } from '../signals/Menu';
-import { content } from '../signals/Editor';
+import { filePath, fileName } from '../signals/Editor';
 import { Howl } from 'howler';
 import {
   ArrowUp,
@@ -120,9 +120,7 @@ const RightMenuElement: FC = () => {
   );
 };
 
-const RightFooterElement: FC = () => (
-  <>{truncateText(route.value)}</>
-);
+const RightFooterElement: FC = () => <>{truncateText(route.value)}</>;
 
 const Browse: FC = () => {
   useSignalEffect(() => {
@@ -187,17 +185,12 @@ const Browse: FC = () => {
     []
   );
 
-  const openFile = useCallback(async (filePath: string) => {
-    isLoading.value = true;
-    try {
-      content.value = await invoke('read_file_content', { filePath });
-    } catch (e) {
-      console.error('Error opening file:', e);
-    } finally {
-      isLoading.value = false;
-      redirect('/editor', true);
-    }
-  }, []);
+  const openFile = (fileRoute: string) => {
+    const lastSlashIndex = fileRoute.lastIndexOf('/');
+    filePath.value = fileRoute.substring(0, lastSlashIndex + 1);
+    fileName.value = fileRoute.substring(lastSlashIndex + 1);
+    redirect('/editor', true);
+  };
 
   const navigate = useCallback(
     async (path: string, isDir: boolean, goBack: boolean) => {
@@ -255,10 +248,7 @@ const Browse: FC = () => {
     );
   }, [files.value, searchInput.value]);
 
-  const ItemRenderer: FC<RendererProps> = ({
-    index,
-    style,
-  }) => {
+  const ItemRenderer: FC<RendererProps> = ({ index, style }) => {
     const item = filteredFiles[index];
     const isErrorFile = /^\(OS ERROR \d+\)$/.test(getFileExtension(item));
     return (

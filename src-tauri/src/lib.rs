@@ -1,9 +1,9 @@
 mod fs;
-use fs::{
-    get_config, get_files, get_mount_points, read_file_content, set_config,
-};
+use fs::{get_config, get_files, get_mount_points, load_file, save_file, set_config};
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+mod watcher;
+use watcher::start_file_watcher;
+
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -11,7 +11,9 @@ pub fn run() {
             set_config,
             get_files,
             get_mount_points,
-            read_file_content,
+            load_file,
+            save_file,
+            start_file_watcher,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

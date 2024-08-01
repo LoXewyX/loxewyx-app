@@ -1,3 +1,6 @@
 import { signal } from '@preact/signals';
 
-export const content = signal('');
+const filePath = signal('C:/');
+const fileName = signal('main.eki');
+
+export { filePath, fileName };
