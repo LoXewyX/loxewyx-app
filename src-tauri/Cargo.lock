@@ -8,6 +8,7 @@ version = "0.0.1"
 dependencies = [
  "chrono",
  "jwalk",
+ "lazy_static",
  "mountpoints",
  "notify",
  "serde",

@@ -189,7 +189,8 @@ const Browse: FC = () => {
     const lastSlashIndex = fileRoute.lastIndexOf('/');
     filePath.value = fileRoute.substring(0, lastSlashIndex + 1);
     fileName.value = fileRoute.substring(lastSlashIndex + 1);
-    redirect('/editor', true);
+
+    redirect('/editor');
   };
 
   const navigate = useCallback(

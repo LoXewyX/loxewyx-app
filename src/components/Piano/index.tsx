@@ -109,7 +109,7 @@ const LeftFooterElement: FC = () => {
 const RightFooterElement: FC = () => {
   return (
     <div className='flex items-center'>
-      {!!currentDevice.value ? (
+      {currentDevice.value ? (
         <>
           <Zap className='mr-2' width={18} height={18} />
           {currentDevice.value}

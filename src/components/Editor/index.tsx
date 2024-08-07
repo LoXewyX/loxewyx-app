@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
-import { useRef, useState } from 'preact/hooks';
-import { signal, useSignalEffect } from '@preact/signals';
+import { listen, UnlistenFn } from '@tauri-apps/api/event';
+import { useRef } from 'preact/hooks';
+import { signal, effect, useSignalEffect } from '@preact/signals';
 import MonacoEditor, { OnChange, useMonaco } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
 import Loading from '../../templates/Loading';
@@ -14,48 +14,23 @@ import { setupMonaco } from './monacoConfig';
 
 const isMonacoReady = signal(false);
 const content = signal('');
+const fullPath = signal('');
 const EKILOX_LANGUAGE_ID = 'ekilox';
 
 const RightFooterElement: FC = () => (
-  <>
-    {!fileName.value || !filePath.value
-      ? 'Untitled'
-      : `${filePath.value}${fileName.value}`}
-  </>
+  <>{!fileName.value || !filePath.value ? 'Untitled' : fullPath.value}</>
 );
 
 const LeftMenuElement: FC = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [newFileName, setNewFileName] = useState('');
-
-  useSignalEffect(() => {
-    (async () => {
-      await listen('file-changed', (event) => {
-        const filePath = event.payload as string;
-        if (filePath) {
-          invoke('load_file', { path: filePath })
-            .then((newContent) => {
-              content.value = newContent as string;
-            })
-            .catch((error) => console.error('Error loading file:', error));
-        }
-      });
-    })();
-  });
+  const showModal = signal(false);
+  const newFileName = signal('');
 
   const saveFile = async () => {
-    if (!filePath.value) {
-      setShowModal(true);
-      return;
-    }
-
-    try {
-      await invoke('save_file', {
-        path: filePath.value,
+    if (filePath.value && fileName.value) {
+      await invoke('save_file_content', {
+        filePath: fullPath.value,
         content: content.value,
       });
-    } catch (error) {
-      console.error('Error saving file:', error);
     }
   };
 
@@ -74,17 +49,20 @@ const LeftMenuElement: FC = () => {
   };
 
   const handleModalSubmit = async () => {
-    if (!newFileName) return;
+    if (!newFileName.value) return;
 
     try {
-      await invoke('save_file', { path: newFileName, content: content.value });
-      filePath.value = newFileName;
+      await invoke('save_file', {
+        path: newFileName.value,
+        content: content.value,
+      });
+      filePath.value = newFileName.value;
     } catch (error) {
       console.error('Error saving file:', error);
     }
 
-    setShowModal(false);
-    setNewFileName('');
+    showModal.value = false;
+    newFileName.value = '';
   };
 
   const handleFileInputChange = async (event: Event) => {
@@ -92,39 +70,14 @@ const LeftMenuElement: FC = () => {
     const file = input.files?.[0];
 
     if (file) {
-      if ('showOpenFilePicker' in window) {
-        try {
-          const fileHandle = await (window as any).showOpenFilePicker({
-            startIn: 'documents',
-            types: [
-              {
-                description: 'Text files',
-                accept: { 'text/plain': ['.txt'] },
-              },
-            ],
-          });
+      const reader = new FileReader();
+      reader.onload = () => {
+        content.value = reader.result as string;
+      };
+      reader.readAsText(file);
 
-          const file = fileHandle[0];
-          const fileData = await file.getFile();
-          const fileContent = await fileData.text();
-          content.value = fileContent;
-
-          filePath.value = file.name;
-          fileName.value = file.name;
-        } catch (error) {
-          console.error('Error opening file:', error);
-        }
-      } else {
-        // Fallback to file input
-        const reader = new FileReader();
-        reader.onload = () => {
-          content.value = reader.result as string;
-        };
-        reader.readAsText(file);
-
-        filePath.value = file.name;
-        fileName.value = file.name;
-      }
+      filePath.value = file.name;
+      fileName.value = file.name;
     }
   };
 
@@ -147,7 +100,6 @@ const LeftMenuElement: FC = () => {
       }
     } else {
       return new Promise<FileSystemFileHandle | null>((resolve) => {
-        // Simulate file save dialog
         resolve(null);
       });
     }
@@ -158,7 +110,7 @@ const LeftMenuElement: FC = () => {
       <Save className='ml-2 cursor-pointer' onClick={saveFile} />
       <Archive className='ml-2 cursor-pointer' onClick={saveAs} />
       <label className='ml-2 cursor-pointer'>
-        <Upload /> {/* Add upload icon */}
+        <Upload />
         <input
           type='file'
           className='hidden'
@@ -167,16 +119,16 @@ const LeftMenuElement: FC = () => {
       </label>
 
       {/* Modal for entering file name */}
-      {showModal && (
+      {showModal.value && (
         <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
           <div className='bg-white p-6 rounded shadow-lg'>
             <h2 className='text-lg font-semibold'>Enter file name</h2>
             <input
               type='text'
               className='mt-2 p-2 border border-gray-300 rounded'
-              value={newFileName}
+              value={newFileName.value}
               onChange={(e) =>
-                setNewFileName((e.target as HTMLInputElement).value)
+                (newFileName.value = (e.target as HTMLInputElement).value)
               }
             />
             <div className='mt-4 flex justify-end'>
@@ -188,7 +140,7 @@ const LeftMenuElement: FC = () => {
               </button>
               <button
                 className='bg-gray-300 px-4 py-2 rounded'
-                onClick={() => setShowModal(false)}
+                onClick={() => (showModal.value = false)}
               >
                 Cancel
               </button>
@@ -203,18 +155,19 @@ const LeftMenuElement: FC = () => {
 function Editor() {
   const monacoInstance = useMonaco();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const unlistenRef = useRef<UnlistenFn | null>(null);
 
-  useSignalEffect(() => {
-    if (monacoInstance !== null) {
+  effect(() => {
+    if (monacoInstance) {
       isMonacoReady.value = true;
       setupMonaco(monacoInstance, EKILOX_LANGUAGE_ID);
-    }
 
-    leftNavbarElement.value = <LeftMenuElement />;
-    rightFooterElement.value = <RightFooterElement />;
+      leftNavbarElement.value = <LeftMenuElement />;
+      rightFooterElement.value = <RightFooterElement />;
+    }
   });
 
-  useSignalEffect(() => {
+  effect(() => {
     const editor = editorRef.current;
     if (editor) {
       const subscription = editor.onDidChangeModelContent(() => {
@@ -224,6 +177,45 @@ function Editor() {
 
       return () => subscription.dispose();
     }
+  });
+
+  useSignalEffect(() => {
+    fullPath.value = `${filePath.value}${fileName.value}`;
+    console.log(fullPath.value);
+  });
+
+  useSignalEffect(() => {
+    const startWatcher = async () => {
+      if (fullPath.value) {
+        try {
+          await invoke('start_file_watcher', {
+            filePath: fullPath.value,
+          });
+          console.log("listening...");
+          content.value = await invoke('get_file_content', {
+            filePath: fullPath.value,
+          });
+          console.log(content.value);
+          const unlisten = await listen('watch_for_changes', (e) => {
+            content.value = e.payload as string;
+          });
+          unlistenRef.current = unlisten;
+        } catch (error) {
+          console.error('Error starting file watcher:', error);
+        }
+      }
+    };
+    startWatcher();
+
+    return () => {
+      if (unlistenRef.current) {
+        unlistenRef.current = null;
+        console.log('unlistening...');
+        invoke('stop_file_watcher', {
+          filePath: fullPath.value,
+        });
+      }
+    };
   });
 
   const handleChange: OnChange = (value) => {
@@ -238,7 +230,7 @@ function Editor() {
         height='calc(100vh - 75px)'
         defaultLanguage={EKILOX_LANGUAGE_ID}
         theme={isDarkTheme.value ? 'vs-dark' : 'vs'}
-        defaultValue={content.value}
+        value={content.value}
         onChange={handleChange}
         editorDidMount={(editor: editor.IStandaloneCodeEditor | null) =>
           (editorRef.current = editor)
